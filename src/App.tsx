@@ -7,6 +7,10 @@ import '@fontsource/roboto/700.css';
 
 import './App.scss';
 import testingImage from './assets/gimp-2.10-splash.png';
+import { Button, IconButton, Tooltip } from '@mui/material';
+
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 
 function CanvasLayer() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -19,7 +23,7 @@ function CanvasLayer() {
         setTimeout(() => {
             container.scrollTo(
                 (container.scrollWidth - container.clientWidth) * .5,
-                (container.scrollHeight - container.clientHeight) * .5,
+                (container.scrollHeight - container.clientHeight - 50) * .5,
             );
         }, 100);
 
@@ -56,10 +60,30 @@ function CanvasLayer() {
     </div>;
 }
 
+function ToolBar() {
+    return <div className="toolbar">
+        <Button>
+            Quantization Wizard
+        </Button>
+
+        <Tooltip title="Open/Load Image">
+            <IconButton color="primary">
+                <FolderOpenIcon />
+            </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Export/Save Image">
+            <IconButton color="primary">
+                <SaveAltIcon />
+            </IconButton>
+        </Tooltip>
+    </div>;
+}
+
 function App() {
     return <>
         <CanvasLayer />
-        <div className="navbar"></div>
+        <ToolBar />
     </>;
 }
 

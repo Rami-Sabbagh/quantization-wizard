@@ -23,7 +23,7 @@
     }
 }
 
-.navbar {
+.toolbar {
     height: 50px;
 
     position: absolute;
@@ -31,8 +31,11 @@
     left: 0;
     right: 0;
 
-    $bg-value: 30;
+    display: flex;
+    box-sizing: border-box;
+    padding: 5px;
 
-    background: rgba($bg-value, $bg-value, $bg-value, 0.4);
+    $bg-value: 30;
+    background: rgba($bg-value, $bg-value, $bg-value, 0.5);
     backdrop-filter: blur(15px);
 }
