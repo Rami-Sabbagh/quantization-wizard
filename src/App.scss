@@ -1,0 +1,38 @@
+.canvas-layer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    overflow: hidden;
+
+    background: #0f0f0f;
+}
+
+.canvas-pane {
+    width: min-content;
+    height: min-content;
+
+    padding: 80vh 80vw;
+
+    cursor: grab;
+
+    * {
+        user-select: none;
+    }
+}
+
+.navbar {
+    height: 50px;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    $bg-value: 30;
+
+    background: rgba($bg-value, $bg-value, $bg-value, 0.4);
+    backdrop-filter: blur(15px);
+}
