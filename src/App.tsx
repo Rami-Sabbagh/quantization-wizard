@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -11,6 +11,8 @@ import { Button, IconButton, Tooltip } from '@mui/material';
 
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import { loadImage } from './lib/images/browser';
+import { invertImage } from './lib/invert';
 
 function CanvasLayer() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -53,9 +55,20 @@ function CanvasLayer() {
         };
     }, []);
 
+    const [invertedImage, setInvertedImage] = useState('');
+
+    useEffect(() => {
+        (async () => {
+            const image = await loadImage(testingImage);
+            invertImage(image);
+            setInvertedImage(image.toDataURL());
+        })();
+    }, []);
+
     return <div ref={containerRef} className="canvas-layer">
         <div ref={paneRef} className="canvas-pane">
             <img src={testingImage} alt='Original' />
+            <img src={invertedImage} alt='Quantized' />
         </div>
     </div>;
 }
