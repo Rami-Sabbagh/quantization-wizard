@@ -1,10 +1,18 @@
 import { RGBA, RGBAImage } from './interfaces';
 
-const imageElement: HTMLImageElement = document.querySelector('#internal-image')!;
-const canvasElement: HTMLCanvasElement = document.querySelector('#internal-canvas')!;
 
-if (!imageElement) throw new Error('The internal image element could not be found. Did anyone modify index.html?');
-if (!canvasElement) throw new Error('The internal canvas element could not be found. Did anyone modify index.html?');
+
+function getInternalElements() {
+    if (!document) throw new Error('Operation not allowed in workers!');
+
+    const imageElement: HTMLImageElement = document.querySelector('#internal-image')!;
+    const canvasElement: HTMLCanvasElement = document.querySelector('#internal-canvas')!;
+
+    if (!imageElement) throw new Error('The internal image element could not be found. Did anyone modify index.html?');
+    if (!canvasElement) throw new Error('The internal canvas element could not be found. Did anyone modify index.html?');
+
+    return { imageElement, canvasElement };
+}
 
 class BrowserRGBAImage implements RGBAImage {
     public readonly width = this.imageData.width;
@@ -45,7 +53,13 @@ class BrowserRGBAImage implements RGBAImage {
         this.imageData.data[baseIndex + 3] = a!;
     }
 
+    toImageData(): ImageData {
+        return this.imageData;
+    }
+
     toDataURL(): string {
+        const { canvasElement } = getInternalElements();
+
         canvasElement.width = this.width;
         canvasElement.height = this.height;
 
@@ -62,8 +76,12 @@ class BrowserRGBAImage implements RGBAImage {
     }
 }
 
+export function fromImageData(imageData: ImageData): RGBAImage {
+    return new BrowserRGBAImage(imageData);
+}
 
-export async function loadImage(uri: string) {
+export async function loadImage(uri: string): Promise<RGBAImage> {
+    const { imageElement, canvasElement } = getInternalElements();
     imageElement.src = '';
     imageElement.src = uri;
 

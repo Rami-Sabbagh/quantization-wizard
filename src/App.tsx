@@ -11,8 +11,10 @@ import { Button, IconButton, Tooltip } from '@mui/material';
 
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import { loadImage } from './lib/images/browser';
+import { fromImageData, loadImage } from './lib/images/browser';
 import { invertImage } from './lib/invert';
+import { kmeans } from './lib/quantization';
+import { RGBAImage } from './lib/images/interfaces';
 
 function CanvasLayer() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -55,20 +57,26 @@ function CanvasLayer() {
         };
     }, []);
 
-    const [invertedImage, setInvertedImage] = useState('');
+    const [resultImage, setResultImage] = useState('');
+
+    const worker = useMemo(() => new Worker(new URL('./lib/worker.ts', import.meta.url)), []);
 
     useEffect(() => {
         (async () => {
             const image = await loadImage(testingImage);
-            invertImage(image);
-            setInvertedImage(image.toDataURL());
+
+            worker.postMessage(image.toImageData());
+            worker.addEventListener('message', ({ data }: MessageEvent<ImageData>) => {
+                const result = fromImageData(data);
+                setResultImage(result.toDataURL());
+            });
         })();
     }, []);
 
     return <div ref={containerRef} className="canvas-layer">
         <div ref={paneRef} className="canvas-pane">
             <img src={testingImage} alt='Original' />
-            <img src={invertedImage} alt='Quantized' />
+            <img src={resultImage} alt='Quantized' />
         </div>
     </div>;
 }

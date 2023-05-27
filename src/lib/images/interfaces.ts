@@ -7,9 +7,10 @@ export interface RGBAImage {
 
     getPixel(x: number, y: number): RGBA;
     getPixel(x: number, y: number, rgba: RGBA): void;
-    
+
     setPixel(x: number, y: number, r: number, g: number, b: number, a: number): void;
     setPixel(x: number, y: number, rgba: RGBA): void;
 
+    toImageData(): ImageData;
     toDataURL(): string;
 }
