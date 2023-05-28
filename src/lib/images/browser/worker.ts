@@ -1,13 +1,24 @@
 import { fromImageData } from './imagedata';
-import { kMeans } from '../../quantization';
+import { QuantizationResult, QuantizationTask } from './messages';
+
+import { kMeansSync } from '../quantization/k-means';
 
 console.log('Worker started!');
 
-onmessage = ({ data }: MessageEvent<ImageData>) => {
-    console.log(`Started processing an image of dimensions ${data.width}x${data.height}.`);
-    const image = fromImageData(data);
-    
-    kMeans(image, 8);
+onmessage = ({ data: message }: MessageEvent<QuantizationTask>) => {
+    const { id, algorithm, data } = message;
 
-    postMessage(image.toImageData());
+    if (algorithm === 'kMeans') {
+        console.log(`[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`);
+
+        const image = fromImageData(data);
+        kMeansSync(image, message.count);
+
+        postMessage({
+            id, data: image.toImageData(),
+        } satisfies QuantizationResult);
+
+    } else {
+        throw new Error(`Unsupported algorithm '${algorithm}'.`);
+    }
 }

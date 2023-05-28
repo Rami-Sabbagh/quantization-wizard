@@ -1,4 +1,4 @@
-import { RGBA, RGBAImage } from './images/interfaces';
+import { RGBA, RGBAImage } from '../interfaces';
 
 function distance(c1: RGBA, c2: RGBA): number {
     const [r1, g1, b1] = c1;
@@ -62,7 +62,7 @@ function updateCentroids(image: RGBAImage, centroids: RGBA[], clusters: number[]
     }
 }
 
-export function kMeans(image: RGBAImage, count: number): RGBAImage {
+export function kMeansSync(image: RGBAImage, count: number): RGBAImage {
     const centroids: RGBA[] = [];
     for (let i = 0; i < count; i++)
         centroids[i] = [

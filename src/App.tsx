@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -7,11 +7,13 @@ import '@fontsource/roboto/700.css';
 
 import './App.scss';
 import testingImage from './assets/gimp-2.10-splash.png';
-import { Button, IconButton, Tooltip } from '@mui/material';
 
+import { Button, IconButton, Tooltip } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+
 import { loadImageData, toDataURL } from './lib/images/browser/loader';
+import { kMeans } from './lib/images/browser/async';
 
 function CanvasLayer() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -56,17 +58,16 @@ function CanvasLayer() {
 
     const [resultImage, setResultImage] = useState('');
 
-    const worker = useMemo(() => new Worker(new URL('./lib/images/browser/worker.ts', import.meta.url)), []);
-
     useEffect(() => {
+        const controller = new AbortController();
+
         (async () => {
             const image = await loadImageData(testingImage);
-            worker.postMessage(image);
-
-            worker.addEventListener('message', ({ data }: MessageEvent<ImageData>) => {
-                setResultImage(toDataURL(data));
-            });
+            const result = await kMeans(image, 8, controller.signal);
+            if (result) setResultImage(toDataURL(result));
         })();
+
+        return () => controller.abort();
     }, []);
 
     return <div ref={containerRef} className="canvas-layer">
