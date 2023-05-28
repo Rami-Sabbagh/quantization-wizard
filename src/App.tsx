@@ -11,10 +11,7 @@ import { Button, IconButton, Tooltip } from '@mui/material';
 
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import { fromImageData, loadImage } from './lib/images/browser';
-import { invertImage } from './lib/invert';
-import { kmeans } from './lib/quantization';
-import { RGBAImage } from './lib/images/interfaces';
+import { loadImageData, toDataURL } from './lib/images/browser/loader';
 
 function CanvasLayer() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -59,16 +56,15 @@ function CanvasLayer() {
 
     const [resultImage, setResultImage] = useState('');
 
-    const worker = useMemo(() => new Worker(new URL('./lib/worker.ts', import.meta.url)), []);
+    const worker = useMemo(() => new Worker(new URL('./lib/images/browser/worker.ts', import.meta.url)), []);
 
     useEffect(() => {
         (async () => {
-            const image = await loadImage(testingImage);
+            const image = await loadImageData(testingImage);
+            worker.postMessage(image);
 
-            worker.postMessage(image.toImageData());
             worker.addEventListener('message', ({ data }: MessageEvent<ImageData>) => {
-                const result = fromImageData(data);
-                setResultImage(result.toDataURL());
+                setResultImage(toDataURL(data));
             });
         })();
     }, []);

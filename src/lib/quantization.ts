@@ -62,7 +62,7 @@ function updateCentroids(image: RGBAImage, centroids: RGBA[], clusters: number[]
     }
 }
 
-export function kmeans(image: RGBAImage, count: number): RGBAImage {
+export function kMeans(image: RGBAImage, count: number): RGBAImage {
     const centroids: RGBA[] = [];
     for (let i = 0; i < count; i++)
         centroids[i] = [

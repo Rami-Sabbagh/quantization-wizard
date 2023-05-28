@@ -12,5 +12,4 @@ export interface RGBAImage {
     setPixel(x: number, y: number, rgba: RGBA): void;
 
     toImageData(): ImageData;
-    toDataURL(): string;
 }
