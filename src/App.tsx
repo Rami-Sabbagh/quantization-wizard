@@ -8,7 +8,7 @@ import '@fontsource/roboto/700.css';
 import './App.scss';
 import defaultImage from './assets/gimp-2.10-splash.png';
 
-import { Button, IconButton, Skeleton, Tooltip } from '@mui/material';
+import { Button, IconButton, InputAdornment, OutlinedInput, Skeleton, TextField, Tooltip } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -17,6 +17,7 @@ import { saveAs } from 'file-saver';
 
 import { loadImageData, toDataURL } from './lib/images/browser/loader';
 import { kMeans } from './lib/images/browser/async';
+import { NumericFormatCustom } from './components/numeric-format-custom';
 
 type CanvasLayerProps = {
     sourceImage: string;
@@ -53,6 +54,10 @@ function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
 
             overlay.style.cursor = activePointer === null ? 'grab' : 'grabbing';
             if (activePointer !== pointerId) return;
+
+            // Un-focus any active element.
+            const activeElement = document.activeElement;
+            if (activeElement instanceof HTMLElement) activeElement.blur();
 
             container.scrollBy(-movementX, -movementY);
             ev.preventDefault();
@@ -115,10 +120,13 @@ type ToolBarProps = {
     onLoadImage?: (imageFile: File) => void;
     onSaveImage?: () => void;
 
+    paletteSize?: string,
+    setPaletteSize?: (size: string) => void,
+
     reperformQuantization?: () => void;
 };
 
-function ToolBar({ onLoadImage, onSaveImage, reperformQuantization }: ToolBarProps) {
+function ToolBar({ onLoadImage, onSaveImage, paletteSize, setPaletteSize, reperformQuantization }: ToolBarProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const openFileDialog = useCallback(() => {
@@ -131,6 +139,16 @@ function ToolBar({ onLoadImage, onSaveImage, reperformQuantization }: ToolBarPro
         if (!event.target.files || event.target.files.length === 0 || !onLoadImage) return;
         onLoadImage(event.target.files[0]);
     }, [onLoadImage]);
+
+    type PaletteSizeChangeHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+
+    const onPaletteSizeChange = useCallback<PaletteSizeChangeHandler>((ev) => {
+        if (!setPaletteSize) return;
+        setPaletteSize(ev.target.value);
+    }, [setPaletteSize]);
+
+    const paletteSizeParsed = Number.parseInt(paletteSize ?? '');
+    const paletteSizeInvalid = isNaN(paletteSizeParsed) || paletteSizeParsed < 1 || paletteSizeParsed > 256;
 
     return <div className="toolbar">
         <Button>
@@ -155,6 +173,20 @@ function ToolBar({ onLoadImage, onSaveImage, reperformQuantization }: ToolBarPro
 
         <div className='spacer' />
 
+        <OutlinedInput
+            id="palette-size"
+            value={paletteSize}
+            onChange={onPaletteSizeChange}
+            endAdornment={<InputAdornment position="end">colors</InputAdornment>}
+            size="small"
+            sx={{ width: '12ch' }}
+            inputProps={{
+                inputComponent: NumericFormatCustom as any,
+            }}
+            error={paletteSizeInvalid}
+            disabled={paletteSize === undefined || setPaletteSize === undefined}
+        />
+
         <Tooltip title="Reperform Quantization">
             <span>
                 <IconButton onClick={reperformQuantization} disabled={!reperformQuantization}>
@@ -177,19 +209,23 @@ function App() {
     const [sourceImage, setSourceImage] = useState(defaultImage);
     const [resultImage, setResultImage] = useState<string | undefined>(undefined);
     const [quantizationToken, setQuantizationToken] = useState(Date.now());
+    const [paletteSize, setPaletteSize] = useState('8');
 
     useEffect(() => {
+        const size = Number.parseInt(paletteSize);
+        if (isNaN(size) || size < 1 || size > 256) return;
+
         const controller = new AbortController();
         setResultImage('');
 
         (async () => {
             const image = await loadImageData(sourceImage);
-            const result = await kMeans(image, 8, controller.signal);
+            const result = await kMeans(image, size, controller.signal);
             if (result) setResultImage(toDataURL(result));
         })();
 
         return () => controller.abort();
-    }, [quantizationToken, sourceImage]);
+    }, [paletteSize, quantizationToken, sourceImage]);
 
 
     const onLoadImage = useCallback((imageFile: File) => {
@@ -215,6 +251,8 @@ function App() {
         <ToolBar
             onLoadImage={onLoadImage}
             onSaveImage={resultImage ? onSaveImage : undefined}
+            paletteSize={paletteSize}
+            setPaletteSize={setPaletteSize}
             reperformQuantization={resultImage ? reperformQuantization : undefined}
         />
     </>;
