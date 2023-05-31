@@ -11,6 +11,7 @@ import defaultImage from './assets/gimp-2.10-splash.png';
 import { Button, IconButton, Tooltip } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import { saveAs } from 'file-saver';
 
@@ -76,9 +77,11 @@ function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
 type ToolBarProps = {
     onLoadImage?: (imageFile: File) => void;
     onSaveImage?: () => void;
+
+    reperformQuantization?: () => void;
 };
 
-function ToolBar({ onLoadImage, onSaveImage }: ToolBarProps) {
+function ToolBar({ onLoadImage, onSaveImage, reperformQuantization }: ToolBarProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const openFileDialog = useCallback(() => {
@@ -97,18 +100,31 @@ function ToolBar({ onLoadImage, onSaveImage }: ToolBarProps) {
             Quantization Wizard
         </Button>
 
-        <Tooltip title="Open/Load Image" onClick={openFileDialog}>
-            <IconButton color="primary">
-                <FolderOpenIcon />
-            </IconButton>
+        <Tooltip title="Open/Load Image">
+            <span>
+                <IconButton color="primary" onClick={openFileDialog} disabled={!onLoadImage}>
+                    <FolderOpenIcon />
+                </IconButton>
+            </span>
         </Tooltip>
 
-        <Tooltip title="Export/Save Image" onClick={onSaveImage}>
-            <IconButton color="primary" disabled={!onSaveImage}>
-                <SaveAltIcon />
-            </IconButton>
+        <Tooltip title="Export/Save Image">
+            <span>
+                <IconButton color="primary" onClick={onSaveImage} disabled={!onSaveImage}>
+                    <SaveAltIcon />
+                </IconButton>
+            </span>
         </Tooltip>
 
+        <div className='spacer' />
+
+        <Tooltip title="Reperform Quantization">
+            <span>
+                <IconButton color="primary" onClick={reperformQuantization} disabled={!reperformQuantization}>
+                    <RefreshIcon />
+                </IconButton>
+            </span>
+        </Tooltip>
 
         <input
             type='file'
@@ -123,6 +139,7 @@ function ToolBar({ onLoadImage, onSaveImage }: ToolBarProps) {
 function App() {
     const [sourceImage, setSourceImage] = useState(defaultImage);
     const [resultImage, setResultImage] = useState<string | undefined>(undefined);
+    const [quantizationToken, setQuantizationToken] = useState(Date.now());
 
 
     useEffect(() => {
@@ -136,7 +153,7 @@ function App() {
         })();
 
         return () => controller.abort();
-    }, [sourceImage]);
+    }, [quantizationToken, sourceImage]);
 
 
     const onLoadImage = useCallback((imageFile: File) => {
@@ -153,9 +170,17 @@ function App() {
     }, [resultImage]);
 
 
+    const reperformQuantization = useCallback(() => {
+        setQuantizationToken(Date.now());
+    }, []);
+
     return <>
         <CanvasLayer sourceImage={sourceImage} resultImage={resultImage} />
-        <ToolBar onLoadImage={onLoadImage} onSaveImage={resultImage ? onSaveImage : undefined} />
+        <ToolBar
+            onLoadImage={onLoadImage}
+            onSaveImage={resultImage ? onSaveImage : undefined}
+            reperformQuantization={resultImage ? reperformQuantization : undefined}
+        />
     </>;
 }
 

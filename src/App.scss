@@ -35,7 +35,16 @@
     box-sizing: border-box;
     padding: 5px;
 
-    $bg-value: 30;
-    background: rgba($bg-value, $bg-value, $bg-value, 0.5);
+    $bg-value: 10;
+    background: rgba($bg-value, $bg-value, $bg-value, 0.7);
     backdrop-filter: blur(15px);
+    box-shadow: 0 -1px 6px 5px rgba(0, 0, 0, 0.5);
+
+    :not(:first-child) {
+        margin-left: 5px;
+    }
+
+    .spacer {
+        flex: auto;
+    }
 }
