@@ -8,7 +8,7 @@ import '@fontsource/roboto/700.css';
 import './App.scss';
 import defaultImage from './assets/gimp-2.10-splash.png';
 
-import { Button, IconButton, Tooltip } from '@mui/material';
+import { Button, IconButton, Skeleton, Tooltip } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -26,17 +26,21 @@ type CanvasLayerProps = {
 function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const paneRef = useRef<HTMLDivElement>(null);
+    const [dimensions, setDimensions] = useState<{ w: number, h: number } | null>(null);
+
+    const centerCanvas = useCallback(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        container.scrollTo(
+            (container.scrollWidth - container.clientWidth) * .5,
+            (container.scrollHeight - container.clientHeight - 50) * .5,
+        );
+    }, []);
 
     useEffect(() => {
         const pane = paneRef.current, container = containerRef.current;
         if (!pane || !container) return;
-
-        setTimeout(() => {
-            container.scrollTo(
-                (container.scrollWidth - container.clientWidth) * .5,
-                (container.scrollHeight - container.clientHeight - 50) * .5,
-            );
-        }, 100);
 
         let activePointer: number | null = null;
 
@@ -64,12 +68,25 @@ function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
             pane.removeEventListener('pointerup', listener);
             pane.removeEventListener('pointerout', listener);
         };
-    }, []);
+    }, [centerCanvas]);
+
+    const onLoad = useCallback<React.ReactEventHandler<HTMLImageElement>>((ev) => {
+        setTimeout(centerCanvas, 20);
+        setDimensions({ w: ev.currentTarget.width, h: ev.currentTarget.height });
+    }, [centerCanvas]);
 
     return <div ref={containerRef} className="canvas-layer">
-        <div ref={paneRef} className="canvas-pane">
-            <img src={sourceImage} alt='Original' />
-            {resultImage && <img src={resultImage} alt='Quantized' />}
+        <div ref={paneRef} className="canvas-pane" style={{
+            writingMode: (dimensions && dimensions.w <= dimensions.h) ? 'vertical-lr' : 'horizontal-tb'
+        }}>
+            <img src={sourceImage} alt='Original' onLoad={onLoad} />
+            {resultImage
+                ? <img src={resultImage} alt='Quantized' />
+                : <Skeleton
+                    variant='rectangular'
+                    width={dimensions?.w}
+                    height={dimensions?.h}
+                />}
         </div>
     </div>;
 }
@@ -140,7 +157,6 @@ function App() {
     const [sourceImage, setSourceImage] = useState(defaultImage);
     const [resultImage, setResultImage] = useState<string | undefined>(undefined);
     const [quantizationToken, setQuantizationToken] = useState(Date.now());
-
 
     useEffect(() => {
         const controller = new AbortController();
