@@ -12,14 +12,17 @@ import { Button, IconButton, Tooltip } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 
+import { saveAs } from 'file-saver';
+
 import { loadImageData, toDataURL } from './lib/images/browser/loader';
 import { kMeans } from './lib/images/browser/async';
 
 type CanvasLayerProps = {
-    targetImage: string;
+    sourceImage: string;
+    resultImage?: string;
 };
 
-function CanvasLayer({ targetImage }: CanvasLayerProps) {
+function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const paneRef = useRef<HTMLDivElement>(null);
 
@@ -62,24 +65,10 @@ function CanvasLayer({ targetImage }: CanvasLayerProps) {
         };
     }, []);
 
-    const [resultImage, setResultImage] = useState('');
-
-    useEffect(() => {
-        const controller = new AbortController();
-
-        (async () => {
-            const image = await loadImageData(targetImage);
-            const result = await kMeans(image, 8, controller.signal);
-            if (result) setResultImage(toDataURL(result));
-        })();
-
-        return () => controller.abort();
-    }, [targetImage]);
-
     return <div ref={containerRef} className="canvas-layer">
         <div ref={paneRef} className="canvas-pane">
-            <img src={targetImage} alt='Original' />
-            <img src={resultImage} alt='Quantized' />
+            <img src={sourceImage} alt='Original' />
+            {resultImage && <img src={resultImage} alt='Quantized' />}
         </div>
     </div>;
 }
@@ -115,7 +104,7 @@ function ToolBar({ onLoadImage, onSaveImage }: ToolBarProps) {
         </Tooltip>
 
         <Tooltip title="Export/Save Image" onClick={onSaveImage}>
-            <IconButton color="primary">
+            <IconButton color="primary" disabled={!onSaveImage}>
                 <SaveAltIcon />
             </IconButton>
         </Tooltip>
@@ -132,16 +121,41 @@ function ToolBar({ onLoadImage, onSaveImage }: ToolBarProps) {
 }
 
 function App() {
-    const [targetImage, setTargetImage] = useState(defaultImage);
+    const [sourceImage, setSourceImage] = useState(defaultImage);
+    const [resultImage, setResultImage] = useState<string | undefined>(undefined);
+
+
+    useEffect(() => {
+        const controller = new AbortController();
+        setResultImage('');
+
+        (async () => {
+            const image = await loadImageData(sourceImage);
+            const result = await kMeans(image, 8, controller.signal);
+            if (result) setResultImage(toDataURL(result));
+        })();
+
+        return () => controller.abort();
+    }, [sourceImage]);
+
 
     const onLoadImage = useCallback((imageFile: File) => {
-        URL.revokeObjectURL(targetImage);
-        setTargetImage(URL.createObjectURL(imageFile));
-    }, [targetImage, setTargetImage]);
+        URL.revokeObjectURL(sourceImage);
+        setSourceImage(URL.createObjectURL(imageFile));
+    }, [sourceImage, setSourceImage]);
+
+
+    const onSaveImage = useCallback(() => {
+        if (!resultImage) return;
+
+        const timestamp = new Date().toLocaleString();
+        saveAs(resultImage, `${timestamp} - Quantization Output.png`);
+    }, [resultImage]);
+
 
     return <>
-        <CanvasLayer targetImage={targetImage} />
-        <ToolBar onLoadImage={onLoadImage} />
+        <CanvasLayer sourceImage={sourceImage} resultImage={resultImage} />
+        <ToolBar onLoadImage={onLoadImage} onSaveImage={resultImage ? onSaveImage : undefined} />
     </>;
 }
 
