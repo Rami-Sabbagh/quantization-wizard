@@ -102,7 +102,7 @@ function ToolBar({ onLoadImage, onSaveImage, reperformQuantization }: ToolBarPro
 
         <Tooltip title="Open/Load Image">
             <span>
-                <IconButton color="primary" onClick={openFileDialog} disabled={!onLoadImage}>
+                <IconButton onClick={openFileDialog} disabled={!onLoadImage}>
                     <FolderOpenIcon />
                 </IconButton>
             </span>
@@ -110,7 +110,7 @@ function ToolBar({ onLoadImage, onSaveImage, reperformQuantization }: ToolBarPro
 
         <Tooltip title="Export/Save Image">
             <span>
-                <IconButton color="primary" onClick={onSaveImage} disabled={!onSaveImage}>
+                <IconButton onClick={onSaveImage} disabled={!onSaveImage}>
                     <SaveAltIcon />
                 </IconButton>
             </span>
@@ -120,7 +120,7 @@ function ToolBar({ onLoadImage, onSaveImage, reperformQuantization }: ToolBarPro
 
         <Tooltip title="Reperform Quantization">
             <span>
-                <IconButton color="primary" onClick={reperformQuantization} disabled={!reperformQuantization}>
+                <IconButton onClick={reperformQuantization} disabled={!reperformQuantization}>
                     <RefreshIcon />
                 </IconButton>
             </span>
