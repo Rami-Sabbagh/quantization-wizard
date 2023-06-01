@@ -8,7 +8,7 @@ console.log('Worker started!');
 onmessage = ({ data: message }: MessageEvent<QuantizationTask>) => {
     const { id, algorithm, data } = message;
 
-    if (algorithm === 'kMeans') {
+    if (algorithm === 'k-means') {
         console.log(`[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`);
 
         const image = fromImageData(data);

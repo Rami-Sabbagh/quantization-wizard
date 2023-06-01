@@ -8,7 +8,7 @@ import '@fontsource/roboto/700.css';
 import './App.scss';
 import defaultImage from './assets/gimp-2.10-splash.png';
 
-import { Button, IconButton, InputAdornment, OutlinedInput, Skeleton, TextField, Tooltip } from '@mui/material';
+import { Button, IconButton, InputAdornment, MenuItem, OutlinedInput, Select, Skeleton, Tooltip } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -16,8 +16,16 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { saveAs } from 'file-saver';
 
 import { loadImageData, toDataURL } from './lib/images/browser/loader';
-import { kMeans } from './lib/images/browser/async';
+import { QuantizationAlgorithm, quantize } from './lib/images/browser/async';
 import { NumericFormatCustom } from './components/numeric-format-custom';
+import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
+
+const algorithmDisplayName: Record<QuantizationAlgorithm, string> = {
+    'k-means': 'Naïve k-Means',
+    'median-cut': 'Median Cut',
+    'octree': 'Octree',
+    'popularity': 'Popularity',
+};
 
 type CanvasLayerProps = {
     sourceImage: string;
@@ -78,7 +86,7 @@ function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
         overlay.addEventListener('pointermove', pointerListener);
         overlay.addEventListener('pointerup', pointerListener);
         overlay.addEventListener('pointerout', pointerListener);
-        overlay.addEventListener('wheel', wheelListener);
+        overlay.addEventListener('wheel', wheelListener, { passive: true });
 
         return () => {
             overlay.removeEventListener('pointerdown', pointerListener);
@@ -120,13 +128,16 @@ type ToolBarProps = {
     onLoadImage?: (imageFile: File) => void;
     onSaveImage?: () => void;
 
+    algorithm?: QuantizationAlgorithm,
+    setAlgorithm?: (algorithm: QuantizationAlgorithm) => void,
+
     paletteSize?: string,
     setPaletteSize?: (size: string) => void,
 
     reperformQuantization?: () => void;
 };
 
-function ToolBar({ onLoadImage, onSaveImage, paletteSize, setPaletteSize, reperformQuantization }: ToolBarProps) {
+function ToolBar({ onLoadImage, onSaveImage, algorithm, setAlgorithm, paletteSize, setPaletteSize, reperformQuantization }: ToolBarProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const openFileDialog = useCallback(() => {
@@ -139,6 +150,13 @@ function ToolBar({ onLoadImage, onSaveImage, paletteSize, setPaletteSize, reperf
         if (!event.target.files || event.target.files.length === 0 || !onLoadImage) return;
         onLoadImage(event.target.files[0]);
     }, [onLoadImage]);
+
+    type AlgorithmChangeHandler = (event: SelectChangeEvent<QuantizationAlgorithm>) => void;
+
+    const onAlgorithmChange = useCallback<AlgorithmChangeHandler>((ev) => {
+        if (!setAlgorithm) return;
+        setAlgorithm(ev.target.value as QuantizationAlgorithm);
+    }, [setAlgorithm]);
 
     type PaletteSizeChangeHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 
@@ -173,19 +191,37 @@ function ToolBar({ onLoadImage, onSaveImage, paletteSize, setPaletteSize, reperf
 
         <div className='spacer' />
 
-        <OutlinedInput
-            id="palette-size"
-            value={paletteSize}
-            onChange={onPaletteSizeChange}
-            endAdornment={<InputAdornment position="end">colors</InputAdornment>}
-            size="small"
-            sx={{ width: '12ch' }}
-            inputProps={{
-                inputComponent: NumericFormatCustom as any,
-            }}
-            error={paletteSizeInvalid}
-            disabled={paletteSize === undefined || setPaletteSize === undefined}
-        />
+        {
+            algorithm !== undefined && <Select
+                id="algorithm"
+                value={algorithm}
+                onChange={onAlgorithmChange}
+                sx={{ width: '18ch' }}
+                margin='none'
+                disabled={setAlgorithm === undefined}
+            >
+                {Object.entries(algorithmDisplayName).map(([id, name]) =>
+                    <MenuItem key={id} value={id}>{name}</MenuItem>
+                )}
+            </Select>
+        }
+
+        {
+            paletteSize !== undefined && <OutlinedInput
+                id="palette-size"
+                value={paletteSize}
+                onChange={onPaletteSizeChange}
+                endAdornment={<InputAdornment position="end">colors</InputAdornment>}
+                size="small"
+                sx={{ width: '12ch' }}
+                margin='none'
+                inputProps={{
+                    inputComponent: NumericFormatCustom as any,
+                }}
+                error={paletteSizeInvalid}
+                disabled={setPaletteSize === undefined}
+            />
+        }
 
         <Tooltip title="Reperform Quantization">
             <span>
@@ -208,8 +244,11 @@ function ToolBar({ onLoadImage, onSaveImage, paletteSize, setPaletteSize, reperf
 function App() {
     const [sourceImage, setSourceImage] = useState(defaultImage);
     const [resultImage, setResultImage] = useState<string | undefined>(undefined);
-    const [quantizationToken, setQuantizationToken] = useState(Date.now());
+
     const [paletteSize, setPaletteSize] = useState('8');
+    const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
+
+    const [quantizationToken, setQuantizationToken] = useState(Date.now());
 
     useEffect(() => {
         const size = Number.parseInt(paletteSize);
@@ -220,12 +259,12 @@ function App() {
 
         (async () => {
             const image = await loadImageData(sourceImage);
-            const result = await kMeans(image, size, controller.signal);
+            const result = await quantize(image, algorithm, size, controller.signal);
             if (result) setResultImage(toDataURL(result));
         })();
 
         return () => controller.abort();
-    }, [paletteSize, quantizationToken, sourceImage]);
+    }, [algorithm, paletteSize, quantizationToken, sourceImage]);
 
 
     const onLoadImage = useCallback((imageFile: File) => {
@@ -251,8 +290,13 @@ function App() {
         <ToolBar
             onLoadImage={onLoadImage}
             onSaveImage={resultImage ? onSaveImage : undefined}
+
+            algorithm={algorithm}
+            setAlgorithm={setAlgorithm}
+
             paletteSize={paletteSize}
             setPaletteSize={setPaletteSize}
+
             reperformQuantization={resultImage ? reperformQuantization : undefined}
         />
     </>;

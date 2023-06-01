@@ -1,6 +1,8 @@
+import { QuantizationAlgorithm } from './async';
+
 export type QuantizationTask = {
     id: number,
-    algorithm: 'kMeans',
+    algorithm: QuantizationAlgorithm,
     data: ImageData,
     count: number,
 };

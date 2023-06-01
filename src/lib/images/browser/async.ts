@@ -1,8 +1,10 @@
 import { QuantizationResult, QuantizationTask } from './messages';
 
+export type QuantizationAlgorithm = 'k-means' | 'median-cut' | 'popularity' | 'octree';
+
 let nextTaskId = 0;
 
-export async function kMeans(imageData: ImageData, count: number, signal?: AbortSignal): Promise<ImageData | null> {
+export async function quantize(imageData: ImageData, algorithm: QuantizationAlgorithm, count: number, signal?: AbortSignal): Promise<ImageData | null> {
     if (signal?.aborted) return null;
 
     const worker = new Worker(new URL('./worker.ts', import.meta.url));
@@ -10,7 +12,7 @@ export async function kMeans(imageData: ImageData, count: number, signal?: Abort
 
     worker.postMessage({
         id: taskId,
-        algorithm: 'kMeans',
+        algorithm: algorithm,
         data: imageData,
         count,
     } satisfies QuantizationTask);
@@ -44,6 +46,10 @@ export async function kMeans(imageData: ImageData, count: number, signal?: Abort
             resolve(null);
         };
     });
+}
+
+export async function kMeans(imageData: ImageData, count: number, signal?: AbortSignal): Promise<ImageData | null> {
+    return quantize(imageData, 'k-means', count, signal);
 }
 
 
