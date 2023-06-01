@@ -13,3 +13,8 @@ export interface RGBAImage {
 
     toImageData(): ImageData;
 }
+
+export interface QuantizationReport {
+    palette: RGBA[],
+    histogram: number[],
+}

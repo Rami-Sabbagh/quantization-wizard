@@ -1,3 +1,4 @@
+import { RGBA } from '../interfaces';
 import { QuantizationAlgorithm } from './async';
 
 export type QuantizationTask = {
@@ -10,4 +11,6 @@ export type QuantizationTask = {
 export type QuantizationResult = {
     id: number,
     data: ImageData,
+    palette: RGBA[],
+    histogram: number[],
 };

@@ -19,6 +19,7 @@ import { loadImageData, toDataURL } from './lib/images/browser/loader';
 import { QuantizationAlgorithm, quantize } from './lib/images/browser/async';
 import { NumericFormatCustom } from './components/numeric-format-custom';
 import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
+import { RGBA } from './lib/images/interfaces';
 
 const algorithmDisplayName: Record<QuantizationAlgorithm, string> = {
     'k-means': 'Naïve k-Means',
@@ -248,6 +249,9 @@ function App() {
     const [paletteSize, setPaletteSize] = useState('8');
     const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
 
+    const [palette, setPalette] = useState<RGBA[]>([]);
+    const [histogram, setHistogram] = useState<number[]>([]);
+
     const [quantizationToken, setQuantizationToken] = useState(Date.now());
 
     useEffect(() => {
@@ -260,7 +264,11 @@ function App() {
         (async () => {
             const image = await loadImageData(sourceImage);
             const result = await quantize(image, algorithm, size, controller.signal);
-            if (result) setResultImage(toDataURL(result));
+            if (result) {
+                setResultImage(toDataURL(result.data));
+                setPalette(result.palette);
+                setHistogram(result.histogram);
+            }
         })();
 
         return () => controller.abort();

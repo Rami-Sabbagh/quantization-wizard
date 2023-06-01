@@ -4,7 +4,7 @@ export type QuantizationAlgorithm = 'k-means' | 'median-cut' | 'popularity' | 'o
 
 let nextTaskId = 0;
 
-export async function quantize(imageData: ImageData, algorithm: QuantizationAlgorithm, count: number, signal?: AbortSignal): Promise<ImageData | null> {
+export async function quantize(imageData: ImageData, algorithm: QuantizationAlgorithm, count: number, signal?: AbortSignal): Promise<QuantizationResult | null> {
     if (signal?.aborted) return null;
 
     const worker = new Worker(new URL('./worker.ts', import.meta.url));
@@ -17,16 +17,16 @@ export async function quantize(imageData: ImageData, algorithm: QuantizationAlgo
         count,
     } satisfies QuantizationTask);
 
-    return new Promise<ImageData | null>((resolve, reject) => {
+    return new Promise<QuantizationResult | null>((resolve, reject) => {
         let alive = true;
 
-        worker.onmessage = ({ data: { id, data } }: MessageEvent<QuantizationResult>) => {
-            if (id !== taskId) return;
+        worker.onmessage = ({ data: result }: MessageEvent<QuantizationResult>) => {
+            if (result.id !== taskId) return;
 
             worker.terminate();
             alive = false;
 
-            resolve(data);
+            resolve(result);
         };
 
         worker.onerror = (ev: ErrorEvent) => {
@@ -48,7 +48,7 @@ export async function quantize(imageData: ImageData, algorithm: QuantizationAlgo
     });
 }
 
-export async function kMeans(imageData: ImageData, count: number, signal?: AbortSignal): Promise<ImageData | null> {
+export async function kMeans(imageData: ImageData, count: number, signal?: AbortSignal): Promise<QuantizationResult | null> {
     return quantize(imageData, 'k-means', count, signal);
 }
 

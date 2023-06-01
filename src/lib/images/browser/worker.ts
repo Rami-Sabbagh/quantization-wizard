@@ -12,10 +12,11 @@ onmessage = ({ data: message }: MessageEvent<QuantizationTask>) => {
         console.log(`[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`);
 
         const image = fromImageData(data);
-        kMeansSync(image, message.count);
+        const { palette, histogram } = kMeansSync(image, message.count);
 
         postMessage({
             id, data: image.toImageData(),
+            palette, histogram,
         } satisfies QuantizationResult);
 
     } else {

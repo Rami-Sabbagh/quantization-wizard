@@ -1,4 +1,4 @@
-import { RGBA, RGBAImage } from '../interfaces';
+import { QuantizationReport, RGBA, RGBAImage } from '../interfaces';
 
 function distance(c1: RGBA, c2: RGBA): number {
     const [r1, g1, b1] = c1;
@@ -39,7 +39,7 @@ function applyClusters(image: RGBAImage, centroids: RGBA[], clusters: number[]):
             image.setPixel(x, y, centroids[clusters[y * image.width + x]]);
 }
 
-function updateCentroids(image: RGBAImage, centroids: RGBA[], clusters: number[]): void {
+function updateCentroids(image: RGBAImage, centroids: RGBA[], histogram: number[], clusters: number[]): void {
     const pixel: RGBA = [0, 0, 0, 0];
 
     for (let i = 0; i < centroids.length; i++) {
@@ -57,20 +57,25 @@ function updateCentroids(image: RGBAImage, centroids: RGBA[], clusters: number[]
             }
         }
 
+        histogram[i] = count;
+
         if (count === 0) count = 1;
         for (let j = 0; j < 3; j++) centroid[j] /= count;
     }
 }
 
-export function kMeansSync(image: RGBAImage, count: number): RGBAImage {
+export function kMeansSync(image: RGBAImage, count: number): QuantizationReport {
     const centroids: RGBA[] = [];
-    for (let i = 0; i < count; i++)
+    const histogram: number[] = [];
+    for (let i = 0; i < count; i++) {
         centroids[i] = [
             Math.floor(Math.random() * 255 + .5),
             Math.floor(Math.random() * 255 + .5),
             Math.floor(Math.random() * 255 + .5),
             255,
         ];
+        histogram[i] = 0;
+    }
 
     const clusters: number[] = [];
     for (let i = 0; i < image.width * image.height; i++)
@@ -81,12 +86,16 @@ export function kMeansSync(image: RGBAImage, count: number): RGBAImage {
     let iterations = 0;
 
     do {
-        updateCentroids(image, centroids, clusters);
+        updateCentroids(image, centroids, histogram, clusters);
         iterations++;
     } while (updateClusters(image, centroids, clusters));
 
     console.info(`Took ${iterations} iterations to quantize with ${count} colors.`);
 
     applyClusters(image, centroids, clusters);
-    return image;
+
+    return {
+        palette: centroids,
+        histogram,
+    };
 }
