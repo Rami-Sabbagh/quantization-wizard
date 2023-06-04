@@ -17,12 +17,13 @@ export function PaletteDialog({ open, onClose, palette }: PaletteDialogProps) {
     useEffect(() => setSelected(0), [palette]);
     if (selected >= palette.length) setSelected(0);
 
-    return <Dialog open={open} onClose={onClose} >
+    return <Dialog maxWidth='md' open={open} onClose={onClose} >
         <DialogTitle>Color Palette</DialogTitle>
         <DialogContent>
             <ColorSelector palette={palette} selected={selected} onSelect={setSelected} />
         </DialogContent>
         <DialogActions>
+            <Button disabled>Show Histogram</Button>
             <Button onClick={onClose}>Close</Button>
         </DialogActions>
     </Dialog>;
