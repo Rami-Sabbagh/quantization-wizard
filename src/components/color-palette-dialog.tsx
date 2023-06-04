@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { RGBA } from '../lib/images/interfaces';
+import { ColorSelector } from './color-selector';
 
 type PaletteDialogProps = {
     open: boolean,
@@ -11,10 +12,13 @@ type PaletteDialogProps = {
 };
 
 export function PaletteDialog({ open, onClose, palette }: PaletteDialogProps) {
+    const [selected, setSelected] = useState(0);
+    
+
     return <Dialog fullWidth maxWidth='sm' open={open} onClose={onClose} >
         <DialogTitle>Color Palette</DialogTitle>
         <DialogContent>
-            Hello!
+            <ColorSelector palette={palette} selected={selected} onSelect={setSelected} />
         </DialogContent>
         <DialogActions>
             <Button onClick={onClose}>Close</Button>
