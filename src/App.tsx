@@ -17,12 +17,14 @@ import { RGBA } from './lib/images/interfaces';
 import { ToolBar } from './components/toolbar';
 import { CanvasLayer } from './components/canvas-layer';
 import { PaletteDialog } from './components/color-palette-dialog';
+import { HistogramDialog } from './components/histogram-dialog';
 
 
 function App() {
     const [sourceImage, setSourceImage] = useState(defaultImage);
     const [resultImage, setResultImage] = useState<string | undefined>(undefined);
 
+    const [histogramDialogOpen, setHistogramDialogOpen] = useState(false);
     const [paletteDialogOpen, setPaletteDialogOpen] = useState(false);
 
     const [paletteSize, setPaletteSize] = useState('8');
@@ -67,15 +69,23 @@ function App() {
         saveAs(resultImage, `${timestamp} - Quantization Output.png`);
     }, [resultImage]);
 
-
-    const showPalette = useCallback(() => {
-        setPaletteDialogOpen(true);
-    }, []);
-
-    const onViewPaletteClose = useCallback(() => {
+    const showHistogram = useCallback(() => {
+        setHistogramDialogOpen(true);
         setPaletteDialogOpen(false);
     }, []);
 
+    const onHistogramDialogClose = useCallback(() => {
+        setHistogramDialogOpen(false);
+    }, []);
+
+    const showPalette = useCallback(() => {
+        setPaletteDialogOpen(true);
+        setHistogramDialogOpen(false);
+    }, []);
+
+    const onPaletteDialogClose = useCallback(() => {
+        setPaletteDialogOpen(false);
+    }, []);
 
     const reperformQuantization = useCallback(() => {
         setQuantizationToken(Date.now());
@@ -88,6 +98,7 @@ function App() {
             onSaveImage={resultImage ? onSaveImage : undefined}
 
             showPalette={resultImage ? showPalette : undefined}
+            showHistogram={resultImage ? showHistogram : undefined}
 
             algorithm={algorithm}
             setAlgorithm={setAlgorithm}
@@ -97,7 +108,8 @@ function App() {
 
             reperformQuantization={resultImage ? reperformQuantization : undefined}
         />
-        <PaletteDialog open={paletteDialogOpen} onClose={onViewPaletteClose} palette={palette} />
+        <PaletteDialog open={paletteDialogOpen} onClose={onPaletteDialogClose} showHistogram={showHistogram} palette={palette} />
+        <HistogramDialog open={histogramDialogOpen} onClose={onHistogramDialogClose} showPalette={showPalette} palette={palette} histogram={histogram} />
     </>;
 }
 

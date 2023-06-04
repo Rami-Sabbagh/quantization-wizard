@@ -5,6 +5,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PaletteIcon from '@mui/icons-material/Palette';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 import { RGBA } from '../lib/images/interfaces';
 import { QuantizationAlgorithm } from '../lib/images/browser/async';
@@ -25,6 +26,7 @@ type ToolBarProps = {
     onSaveImage?: () => void;
 
     showPalette?: () => void;
+    showHistogram?: () => void;
 
     algorithm?: QuantizationAlgorithm,
     setAlgorithm?: (algorithm: QuantizationAlgorithm) => void,
@@ -38,7 +40,7 @@ type ToolBarProps = {
 
 export function ToolBar({
     onLoadImage, onSaveImage,
-    showPalette,
+    showPalette, showHistogram,
     algorithm, setAlgorithm,
     paletteSize, setPaletteSize,
     reperformQuantization
@@ -102,6 +104,14 @@ export function ToolBar({
             <span>
                 <IconButton onClick={showPalette} disabled={!showPalette}>
                     <PaletteIcon />
+                </IconButton>
+            </span>
+        </Tooltip>
+
+        <Tooltip title="Show Histogram">
+            <span>
+                <IconButton onClick={showHistogram} disabled={!showHistogram}>
+                    <BarChartIcon />
                 </IconButton>
             </span>
         </Tooltip>

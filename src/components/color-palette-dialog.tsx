@@ -8,10 +8,12 @@ type PaletteDialogProps = {
     open: boolean,
     onClose: () => void,
 
+    showHistogram?: () => void,
+
     palette: RGBA[],
 };
 
-export function PaletteDialog({ open, onClose, palette }: PaletteDialogProps) {
+export function PaletteDialog({ open, onClose, showHistogram, palette }: PaletteDialogProps) {
     const [selected, setSelected] = useState(0);
 
     useEffect(() => setSelected(0), [palette]);
@@ -23,7 +25,7 @@ export function PaletteDialog({ open, onClose, palette }: PaletteDialogProps) {
             <ColorSelector palette={palette} selected={selected} onSelect={setSelected} />
         </DialogContent>
         <DialogActions>
-            <Button disabled>Show Histogram</Button>
+            <Button onClick={showHistogram} disabled={!showHistogram}>Show Histogram</Button>
             <Button onClick={onClose}>Close</Button>
         </DialogActions>
     </Dialog>;
