@@ -15,7 +15,7 @@ type HistogramDialogProps = {
 
 export function HistogramDialog({ open, onClose, showPalette, palette, histogram }: HistogramDialogProps) {
     return <Dialog maxWidth='xl' fullWidth open={open} onClose={onClose}>
-        <DialogTitle>Color Palette</DialogTitle>
+        <DialogTitle>Colors Histogram</DialogTitle>
         <DialogContent>
             Hello there!
         </DialogContent>
