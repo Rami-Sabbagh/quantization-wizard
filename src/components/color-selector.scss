@@ -1,0 +1,64 @@
+.color-selector {
+    $element-size: 35px;
+    $border-radius: 8px;
+    $indicator-thickness: 4px;
+    $row-length: var(--row-width, 8);
+
+    margin: 10px auto;
+    width: calc($element-size * $row-length);
+    line-height: 0;
+
+    position: relative;
+
+    border-radius: $border-radius;
+    box-shadow: 0px 2px 4px 1px rgba(0, 0, 0, 0.25);
+
+    background-color: #000000;
+    background: repeating-linear-gradient(-45deg, #f29d1a, #f29d1a 4px, #000000 4px, #000000 10px);
+    cursor: not-allowed;
+
+    .color-element {
+        width: $element-size;
+        height: $element-size;
+
+        display: inline-block;
+        cursor: pointer;
+
+        &.tl {
+            border-top-left-radius: $border-radius;
+        }
+
+        &.tr {
+            border-top-right-radius: $border-radius;
+        }
+
+        &.br {
+            border-bottom-right-radius: $border-radius;
+        }
+
+        &.bl {
+            border-bottom-left-radius: $border-radius;
+        }
+    }
+
+    .selection-indicator {
+        width: $element-size + $indicator-thickness * 2;
+        height: $element-size + $indicator-thickness * 2;
+        box-sizing: border-box;
+
+        position: absolute;
+        top: -$indicator-thickness;
+        left: -$indicator-thickness;
+
+        transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translate(calc(var(--color-x) * $element-size),
+                calc(var(--color-y) * $element-size));
+
+        border: $indicator-thickness solid white;
+        border-radius: $border-radius;
+        box-shadow:
+            0 0 0 2px inset black,
+            0 2px 5px 2px inset rgba(0, 0, 0, 0.25),
+            0 2px 5px 1px rgba(0, 0, 0, 0.25);
+    }
+}
