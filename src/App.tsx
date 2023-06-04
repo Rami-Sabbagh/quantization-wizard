@@ -16,11 +16,14 @@ import { RGBA } from './lib/images/interfaces';
 
 import { ToolBar } from './components/toolbar';
 import { CanvasLayer } from './components/canvas-layer';
+import { PaletteDialog } from './components/color-palette-dialog';
 
 
 function App() {
     const [sourceImage, setSourceImage] = useState(defaultImage);
     const [resultImage, setResultImage] = useState<string | undefined>(undefined);
+
+    const [paletteDialogOpen, setPaletteDialogOpen] = useState(false);
 
     const [paletteSize, setPaletteSize] = useState('8');
     const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
@@ -34,8 +37,8 @@ function App() {
         const size = Number.parseInt(paletteSize);
         if (isNaN(size) || size < 1 || size > 256) return;
 
-        const controller = new AbortController();
         setResultImage('');
+        const controller = new AbortController();
 
         (async () => {
             const image = await loadImageData(sourceImage);
@@ -65,6 +68,15 @@ function App() {
     }, [resultImage]);
 
 
+    const showPalette = useCallback(() => {
+        setPaletteDialogOpen(true);
+    }, []);
+
+    const onViewPaletteClose = useCallback(() => {
+        setPaletteDialogOpen(false);
+    }, []);
+
+
     const reperformQuantization = useCallback(() => {
         setQuantizationToken(Date.now());
     }, []);
@@ -75,6 +87,8 @@ function App() {
             onLoadImage={onLoadImage}
             onSaveImage={resultImage ? onSaveImage : undefined}
 
+            showPalette={resultImage ? showPalette : undefined}
+
             algorithm={algorithm}
             setAlgorithm={setAlgorithm}
 
@@ -83,6 +97,7 @@ function App() {
 
             reperformQuantization={resultImage ? reperformQuantization : undefined}
         />
+        <PaletteDialog open={paletteDialogOpen} onClose={onViewPaletteClose} palette={palette} />
     </>;
 }
 

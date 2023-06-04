@@ -4,7 +4,9 @@ import { Button, IconButton, InputAdornment, MenuItem, OutlinedInput, Select, To
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import PaletteIcon from '@mui/icons-material/Palette';
 
+import { RGBA } from '../lib/images/interfaces';
 import { QuantizationAlgorithm } from '../lib/images/browser/async';
 import { NumericFormatCustom } from './numeric-format-custom';
 import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
@@ -22,6 +24,8 @@ type ToolBarProps = {
     onLoadImage?: (imageFile: File) => void;
     onSaveImage?: () => void;
 
+    showPalette?: () => void;
+
     algorithm?: QuantizationAlgorithm,
     setAlgorithm?: (algorithm: QuantizationAlgorithm) => void,
 
@@ -32,7 +36,14 @@ type ToolBarProps = {
 };
 
 
-export function ToolBar({ onLoadImage, onSaveImage, algorithm, setAlgorithm, paletteSize, setPaletteSize, reperformQuantization }: ToolBarProps) {
+export function ToolBar({
+    onLoadImage, onSaveImage,
+    showPalette,
+    algorithm, setAlgorithm,
+    paletteSize, setPaletteSize,
+    reperformQuantization
+}: ToolBarProps) {
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const openFileDialog = useCallback(() => {
@@ -47,6 +58,7 @@ export function ToolBar({ onLoadImage, onSaveImage, algorithm, setAlgorithm, pal
     }, [onLoadImage]);
 
     type AlgorithmChangeHandler = (event: SelectChangeEvent<QuantizationAlgorithm>) => void;
+
 
     const onAlgorithmChange = useCallback<AlgorithmChangeHandler>((ev) => {
         if (!setAlgorithm) return;
@@ -85,6 +97,14 @@ export function ToolBar({ onLoadImage, onSaveImage, algorithm, setAlgorithm, pal
         </Tooltip>
 
         <div className='spacer' />
+
+        <Tooltip title="Show Color Palette">
+            <span>
+                <IconButton onClick={showPalette} disabled={!showPalette}>
+                    <PaletteIcon />
+                </IconButton>
+            </span>
+        </Tooltip>
 
         {
             algorithm !== undefined && <Select
