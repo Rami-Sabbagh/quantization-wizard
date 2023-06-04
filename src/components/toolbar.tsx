@@ -100,18 +100,18 @@ export function ToolBar({
 
         <div className='spacer' />
 
-        <Tooltip title="Show Color Palette">
-            <span>
-                <IconButton onClick={showPalette} disabled={!showPalette}>
-                    <PaletteIcon />
-                </IconButton>
-            </span>
-        </Tooltip>
-
         <Tooltip title="Show Histogram">
             <span>
                 <IconButton onClick={showHistogram} disabled={!showHistogram}>
                     <BarChartIcon />
+                </IconButton>
+            </span>
+        </Tooltip>
+
+        <Tooltip title="Show Color Palette">
+            <span>
+                <IconButton onClick={showPalette} disabled={!showPalette}>
+                    <PaletteIcon />
                 </IconButton>
             </span>
         </Tooltip>
