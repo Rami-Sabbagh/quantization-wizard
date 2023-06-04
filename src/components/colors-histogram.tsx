@@ -11,9 +11,10 @@ type ColorBarProps = {
 };
 
 function ColorBar({ color, percentage }: ColorBarProps) {
-    return <div className='color-bar' style={{ backgroundColor: rgba2hex(color) }}>
-        {rgba2hex(color)}
-    </div>;
+    return <div className='color-bar' style={{
+        backgroundColor: rgba2hex(color),
+        ['--percentage']: percentage,
+    } as React.CSSProperties} />
 }
 
 type ColorsHistogramProps = {
@@ -25,10 +26,15 @@ export function ColorsHistogram({ palette, histogram }: ColorsHistogramProps) {
     let maxCount = 1;
     histogram.forEach(count => maxCount = Math.max(maxCount, count));
 
-    return <div className="colors-histogram">
-        {palette.map((color, id) => {
-            return <ColorBar key={id} color={color} percentage={histogram[id] / maxCount} />
-        })}
-        {/* <ColorBar color={[255, 0, 255, 255]} percentage={100} /> */}
+    const data: [color: RGBA, count: number, id: number][] = [];
+    palette.forEach((color, id) => data[id] = [color, histogram[id], id]);
+    data.sort((a, b) => b[1] - a[1]);
+
+    return <div className="colors-histogram" style={{
+        ['--columns']: palette.length,
+    } as React.CSSProperties}>
+        {data.map(([color, count, id]) =>
+            <ColorBar key={id} color={color} percentage={count / maxCount} />
+        )}
     </div>;
 }
