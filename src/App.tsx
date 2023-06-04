@@ -18,11 +18,13 @@ import { ToolBar } from './components/toolbar';
 import { CanvasLayer } from './components/canvas-layer';
 import { PaletteDialog } from './components/color-palette-dialog';
 import { HistogramDialog } from './components/histogram-dialog';
+import { toDataURLIndexed } from './lib/images/browser/encoder';
 
 
 function App() {
     const [sourceImage, setSourceImage] = useState(defaultImage);
     const [resultImage, setResultImage] = useState<string | undefined>(undefined);
+    const [resultIndexedImage, setResultIndexedImage] = useState<string | undefined>(undefined);
 
     const [histogramDialogOpen, setHistogramDialogOpen] = useState(false);
     const [paletteDialogOpen, setPaletteDialogOpen] = useState(false);
@@ -39,13 +41,15 @@ function App() {
         const size = Number.parseInt(paletteSize);
         if (isNaN(size) || size < 1 || size > 256) return;
 
-        setResultImage('');
+        setResultImage(undefined);
+        setResultIndexedImage(undefined);
         const controller = new AbortController();
 
         (async () => {
             const image = await loadImageData(sourceImage);
             const result = await quantize(image, algorithm, size, controller.signal);
             if (result) {
+                setResultIndexedImage(await toDataURLIndexed(result.data, result.palette));
                 setResultImage(toDataURL(result.data));
                 setPalette(result.palette);
                 setHistogram(result.histogram);
@@ -68,6 +72,13 @@ function App() {
         const timestamp = new Date().toLocaleString();
         saveAs(resultImage, `${timestamp} - Quantization Output.png`);
     }, [resultImage]);
+
+    const onSaveIndexedImage = useCallback(() => {
+        if (!resultIndexedImage) return;
+
+        const timestamp = new Date().toLocaleString();
+        saveAs(resultIndexedImage, `${timestamp} - Quantization Indexed Output.gif`);
+    }, [resultIndexedImage]);
 
     const showHistogram = useCallback(() => {
         setHistogramDialogOpen(true);
@@ -96,6 +107,7 @@ function App() {
         <ToolBar
             onLoadImage={onLoadImage}
             onSaveImage={resultImage ? onSaveImage : undefined}
+            onSaveIndexedImage={resultIndexedImage ? onSaveIndexedImage : undefined}
 
             showPalette={resultImage ? showPalette : undefined}
             showHistogram={resultImage ? showHistogram : undefined}

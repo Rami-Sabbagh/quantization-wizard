@@ -6,8 +6,8 @@ import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import PaletteIcon from '@mui/icons-material/Palette';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import GifBoxIcon from '@mui/icons-material/GifBox';
 
-import { RGBA } from '../lib/images/interfaces';
 import { QuantizationAlgorithm } from '../lib/images/browser/async';
 import { NumericFormatCustom } from './numeric-format-custom';
 import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
@@ -24,6 +24,7 @@ const algorithmDisplayName: Record<QuantizationAlgorithm, string> = {
 type ToolBarProps = {
     onLoadImage?: (imageFile: File) => void;
     onSaveImage?: () => void;
+    onSaveIndexedImage?: () => void;
 
     showPalette?: () => void;
     showHistogram?: () => void;
@@ -39,7 +40,7 @@ type ToolBarProps = {
 
 
 export function ToolBar({
-    onLoadImage, onSaveImage,
+    onLoadImage, onSaveImage, onSaveIndexedImage,
     showPalette, showHistogram,
     algorithm, setAlgorithm,
     paletteSize, setPaletteSize,
@@ -94,6 +95,14 @@ export function ToolBar({
             <span>
                 <IconButton onClick={onSaveImage} disabled={!onSaveImage}>
                     <SaveAltIcon />
+                </IconButton>
+            </span>
+        </Tooltip>
+
+        <Tooltip title="Export/Save Indexed Image">
+            <span>
+                <IconButton onClick={onSaveIndexedImage} disabled={!onSaveIndexedImage}>
+                    <GifBoxIcon />
                 </IconButton>
             </span>
         </Tooltip>
@@ -161,7 +170,7 @@ export function ToolBar({
             ref={fileInputRef}
             onChange={onFileInputChange}
             style={{ display: 'none' }}
-            accept='image/jpeg, image/png, image/bmp'
+            accept='image/jpeg, image/png, image/bmp, image/gif'
         />
     </div>;
 }
