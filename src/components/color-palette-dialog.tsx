@@ -15,7 +15,7 @@ export function PaletteDialog({ open, onClose, palette }: PaletteDialogProps) {
     const [selected, setSelected] = useState(0);
 
     useEffect(() => setSelected(0), [palette]);
-    if (selected >= palette.length) setSelected(0);
+    if (selected >= palette.length && selected !== 0) setSelected(0);
 
     return <Dialog maxWidth='md' open={open} onClose={onClose} >
         <DialogTitle>Color Palette</DialogTitle>
