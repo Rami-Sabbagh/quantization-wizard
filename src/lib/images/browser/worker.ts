@@ -25,52 +25,46 @@ onmessage = ({ data: message }: MessageEvent<QuantizationTask>) => {
       palette,
       histogram,
     } satisfies QuantizationResult);
+  } else if (algorithm === "median-cut") {
+    console.log(
+      `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
+    );
+    const image = fromImageData(data);
+    const { palette, histogram } = medianCutSync(image, message.count);
+
+    postMessage({
+      id,
+      data: image.toImageData(),
+      palette,
+      histogram,
+    } satisfies QuantizationResult);
+  } else if (algorithm === "octree") {
+    console.log(
+      `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
+    );
+    const image = fromImageData(data);
+    const { palette, histogram } = octreeSync(image, message.count);
+
+    postMessage({
+      id,
+      data: image.toImageData(),
+      palette,
+      histogram,
+    } satisfies QuantizationResult);
+  } else if (algorithm === "popularity") {
+    console.log(
+      `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
+    );
+    const image = fromImageData(data);
+    const { palette, histogram } = popularitySync(image, message.count);
+
+    postMessage({
+      id,
+      data: image.toImageData(),
+      palette,
+      histogram,
+    } satisfies QuantizationResult);
   } else {
-    if (algorithm === "median-cut") {
-      console.log(
-        `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
-      );
-      const image = fromImageData(data);
-      const { palette, histogram } = medianCutSync(image, message.count);
-
-      postMessage({
-        id,
-        data: image.toImageData(),
-        palette,
-        histogram,
-      } satisfies QuantizationResult);
-    } else {
-      if (algorithm === "octree") {
-        console.log(
-          `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
-        );
-        const image = fromImageData(data);
-        const { palette, histogram } = octreeSync(image, message.count);
-
-        postMessage({
-          id,
-          data: image.toImageData(),
-          palette,
-          histogram,
-        } satisfies QuantizationResult);
-      } else {
-        if (algorithm === "popularity") {
-          console.log(
-            `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
-          );
-          const image = fromImageData(data);
-          const { palette, histogram } = popularitySync(image, message.count);
-
-          postMessage({
-            id,
-            data: image.toImageData(),
-            palette,
-            histogram,
-          } satisfies QuantizationResult);
-        } else {
-          throw new Error(`Unsupported algorithm '${algorithm}'.`);
-        }
-      }
-    }
+    throw new Error(`Unsupported algorithm '${algorithm}'.`);
   }
 };
