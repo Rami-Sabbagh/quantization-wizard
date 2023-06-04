@@ -18,20 +18,42 @@ type ColorSelectorProps = {
 };
 
 export function ColorSelector({ palette, selected, onSelect }: ColorSelectorProps) {
-    return <div className='color-selector'>
+    const size = palette.length;
+
+    const columns = Math.min(size, size > 32 ? 16 : 8);
+    const rows = Math.ceil(palette.length / columns);
+
+    return <div className='color-selector' style={{
+        ['--row-width']: columns
+    } as React.CSSProperties}>
         {palette.map(([r, g, b, _a], colorId) => {
+            const column = colorId % columns;
+            const row = Math.floor(colorId / columns);
+
+            let corner = '';
+
+            const firstColumn = column === 0;
+            const firstRow = row === 0;
+            const lastColumn = column + 1 === columns;
+            const lastRow = row + 1 === rows;
+
+            if (firstColumn && firstRow) corner += ' tl';
+            if (lastColumn && firstRow) corner += ' tr';
+            if (firstColumn && lastRow) corner += ' bl';
+            if (lastColumn && lastRow) corner += ' br';
+
             return <span
                 key={colorId}
-                className='color-element'
+                className={`color-element ${corner}`}
                 style={{ backgroundColor: `rgb(${r},${g},${b})` }}
                 onClick={onSelect && (() => onSelect(colorId))}
             >
             </span>;
         })}
         <div className='selection-indicator' style={{
-            ['--color-x']: selected % 8,
-            ['--color-y']: Math.floor(selected / 8),
-        } as React.CSSProperties}/>
+            ['--color-x']: selected % columns,
+            ['--color-y']: Math.floor(selected / columns),
+        } as React.CSSProperties} />
     </div>;
 }
 

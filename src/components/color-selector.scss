@@ -2,16 +2,20 @@
     $element-size: 35px;
     $border-radius: 8px;
     $indicator-thickness: 4px;
-    $row-length: 8;
+    $row-length: var(--row-width, 8);
 
-    margin: 10px 5px;
-    width: $element-size * $row-length;
+    margin: 10px auto;
+    width: calc($element-size * $row-length);
     line-height: 0;
 
     position: relative;
 
     border-radius: $border-radius;
     box-shadow: 0px 2px 4px 1px rgba(0, 0, 0, 0.25);
+
+    background-color: #000000;
+    background: repeating-linear-gradient(-45deg, #f29d1a, #f29d1a 4px, #000000 4px, #000000 10px);
+    cursor: not-allowed;
 
     .color-element {
         width: $element-size;
@@ -20,19 +24,19 @@
         display: inline-block;
         cursor: pointer;
 
-        &:nth-child(1) {
+        &.tl {
             border-top-left-radius: $border-radius;
         }
 
-        &:nth-child(#{$row-length}) {
+        &.tr {
             border-top-right-radius: $border-radius;
         }
 
-        &:nth-last-child(2) {
+        &.br {
             border-bottom-right-radius: $border-radius;
         }
 
-        &:nth-last-child(#{$row-length + 1}) {
+        &.bl {
             border-bottom-left-radius: $border-radius;
         }
     }
