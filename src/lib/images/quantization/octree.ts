@@ -40,7 +40,6 @@ export function octreeSync(image: RGBAImage, count: number): QuantizationReport 
         histogram: [],
     };
 }
-
 class Octree {
     private root: OctreeNode | null;
 
