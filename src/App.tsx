@@ -11,6 +11,7 @@ import defaultImage from './assets/gimp-2.10-splash.png';
 import { saveAs } from 'file-saver';
 
 import { loadImageData, toDataURL } from './lib/images/browser/loader';
+import { toDataURLIndexed } from './lib/images/browser/encoder';
 import { QuantizationAlgorithm, quantize } from './lib/images/browser/async';
 import { RGBA } from './lib/images/interfaces';
 
@@ -18,7 +19,6 @@ import { ToolBar } from './components/toolbar';
 import { CanvasLayer } from './components/canvas-layer';
 import { PaletteDialog } from './components/color-palette-dialog';
 import { HistogramDialog } from './components/histogram-dialog';
-import { toDataURLIndexed } from './lib/images/browser/encoder';
 
 
 function App() {
