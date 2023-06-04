@@ -287,8 +287,6 @@ function App() {
         const timestamp = new Date().toLocaleString();
         saveAs(resultImage, `${timestamp} - Quantization Output.png`);
     }, [resultImage]);
-    
-    
 
     const reperformQuantization = useCallback(() => {
         setQuantizationToken(Date.now());
