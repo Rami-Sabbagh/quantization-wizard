@@ -1,5 +1,5 @@
 import { QuantizationReport, RGBA, RGBAImage } from '../interfaces';
-//hi
+
 class OctreeNode {
     colorSum: number[];
     colorCount: number;
