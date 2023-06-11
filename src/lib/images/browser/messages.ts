@@ -14,17 +14,3 @@ export type QuantizationResult = {
     palette: RGBA[],
     histogram: number[],
 };
-
-//Code Haidar's
-export type QuantizationSearch = {
-    //Original
-    idO: number,
-    algorithmO: QuantizationAlgorithm,
-    dataO: ImageData,
-    countO: number,
-    //Result
-    idR: number,
-    dataR: ImageData,
-    paletteR: RGBA[],
-    histogramR: number[],
-};
