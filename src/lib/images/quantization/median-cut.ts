@@ -1,5 +1,5 @@
 import { QuantizationReport, RGBA, RGBAImage } from '../interfaces';
-
+//Hi
 interface RGBACube {
   rMin: number;
   rMax: number;
