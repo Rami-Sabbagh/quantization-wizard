@@ -46,6 +46,8 @@
         height: $element-size + $indicator-thickness * 2;
         box-sizing: border-box;
 
+        cursor: pointer;
+
         position: absolute;
         top: -$indicator-thickness;
         left: -$indicator-thickness;
