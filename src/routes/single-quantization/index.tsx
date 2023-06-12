@@ -14,8 +14,13 @@ import { PaletteDialog } from 'components/color-palette-dialog';
 import { HistogramDialog } from 'components/histogram-dialog';
 
 import { ToolBar } from './toolbar';
+import { AppMode } from 'components/app-mode-switch';
 
-export function SingleQuantization() {
+interface SingleQuantizationProps {
+    setMode?: (mode: AppMode) => void;
+}
+
+export function SingleQuantization({ setMode }: SingleQuantizationProps) {
     const [sourceImage, setSourceImage] = useState(defaultImage);
     const [resultImage, setResultImage] = useState<string | undefined>(undefined);
     const [resultIndexedImage, setResultIndexedImage] = useState<string | undefined>(undefined);
@@ -99,6 +104,8 @@ export function SingleQuantization() {
     return <>
         <CanvasLayer sourceImage={sourceImage} resultImage={resultImage} />
         <ToolBar
+            setMode={setMode}
+
             onLoadImage={onLoadImage}
             onSaveImage={resultImage ? onSaveImage : undefined}
             onSaveIndexedImage={resultIndexedImage ? onSaveIndexedImage : undefined}

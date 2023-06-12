@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 
-import { Button, IconButton, InputAdornment, MenuItem, OutlinedInput, Select, Tooltip } from '@mui/material';
+import { IconButton, InputAdornment, MenuItem, OutlinedInput, Select, Tooltip } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -13,8 +13,11 @@ import { NumericFormatCustom } from 'components/numeric-format-custom';
 import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
 
 import { algorithmDisplayName } from 'lib/locale';
+import { AppMode, AppModeSwitch } from 'components/app-mode-switch';
 
-type ToolBarProps = {
+interface ToolBarProps {
+    setMode?: (mode: AppMode) => void;
+
     onLoadImage?: (imageFile: File) => void;
     onSaveImage?: () => void;
     onSaveIndexedImage?: () => void;
@@ -29,9 +32,10 @@ type ToolBarProps = {
     setPaletteSize?: (size: string) => void,
 
     reperformQuantization?: () => void;
-};
+}
 
 export function ToolBar({
+    setMode,
     onLoadImage, onSaveImage, onSaveIndexedImage,
     showPalette, showHistogram,
     algorithm, setAlgorithm,
@@ -71,9 +75,7 @@ export function ToolBar({
     const paletteSizeInvalid = isNaN(paletteSizeParsed) || paletteSizeParsed < 1 || paletteSizeParsed > 256;
 
     return <div className="toolbar">
-        <Button>
-            Quantization Wizard
-        </Button>
+        {setMode && <AppModeSwitch active='single-quantization' setMode={setMode} />}
 
         <Tooltip title="Open/Load Image">
             <span>
