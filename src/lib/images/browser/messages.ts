@@ -14,4 +14,3 @@ export type QuantizationResult = {
     palette: RGBA[],
     histogram: number[],
 };
-
