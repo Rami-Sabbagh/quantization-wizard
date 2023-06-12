@@ -8,18 +8,11 @@ import PaletteIcon from '@mui/icons-material/Palette';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import GifBoxIcon from '@mui/icons-material/GifBox';
 
-import { QuantizationAlgorithm } from '../lib/images/browser/async';
-import { NumericFormatCustom } from './numeric-format-custom';
+import { QuantizationAlgorithm } from 'lib/images/browser/async';
+import { NumericFormatCustom } from 'components/numeric-format-custom';
 import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
 
-
-const algorithmDisplayName: Record<QuantizationAlgorithm, string> = {
-    'k-means': 'Naïve k-Means',
-    'median-cut': 'Median Cut',
-    'octree': 'Octree',
-    'popularity': 'Popularity',
-};
-
+import { algorithmDisplayName } from 'lib/locale';
 
 type ToolBarProps = {
     onLoadImage?: (imageFile: File) => void;
@@ -37,7 +30,6 @@ type ToolBarProps = {
 
     reperformQuantization?: () => void;
 };
-
 
 export function ToolBar({
     onLoadImage, onSaveImage, onSaveIndexedImage,

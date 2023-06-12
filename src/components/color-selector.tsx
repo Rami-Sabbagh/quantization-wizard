@@ -1,7 +1,7 @@
 /* eslint-disable no-useless-computed-key */
 import React from 'react';
 
-import { RGBA } from '../lib/images/interfaces';
+import { RGBA } from 'lib/images/interfaces';
 
 import './color-selector.scss';
 

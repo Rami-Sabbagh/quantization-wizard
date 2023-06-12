@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { RGBA } from '../lib/images/interfaces';
-import { rgba2hex } from '../lib/images/color-utilities';
+import { RGBA } from 'lib/images/interfaces';
+import { rgba2hex } from 'lib/images/color-utilities';
 
 import './colors-histogram.scss';
 

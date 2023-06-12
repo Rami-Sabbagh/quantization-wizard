@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { RGBA } from '../lib/images/interfaces';
+import { RGBA } from 'lib/images/interfaces';
 import { ColorSelector } from './color-selector';
 
 type PaletteDialogProps = {
