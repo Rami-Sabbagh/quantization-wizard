@@ -15,6 +15,10 @@ export function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
     const overlayRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState<{ w: number, h: number } | null>(null);
 
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => setVisible(false), [sourceImage]);
+
     const centerCanvas = useCallback(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -23,6 +27,8 @@ export function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
             (container.scrollWidth - container.clientWidth) * .5,
             (container.scrollHeight - container.clientHeight - 50) * .5,
         );
+
+        setVisible(true);
     }, []);
 
     useEffect(() => {
@@ -83,7 +89,7 @@ export function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
     }, [centerCanvas]);
 
     return <>
-        <div ref={containerRef} className="canvas-layer">
+        <div ref={containerRef} className="canvas-layer" style={{ opacity: visible ? 1 : 0 }}>
             <div ref={paneRef} className="canvas-pane" style={{
                 writingMode: (dimensions && dimensions.w <= dimensions.h) ? 'vertical-lr' : 'horizontal-tb'
             }}>

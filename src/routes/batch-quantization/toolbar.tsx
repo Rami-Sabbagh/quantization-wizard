@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useCallback } from 'react';
 
 import { AppMode, AppModeSwitch } from 'components/app-mode-switch';
 
