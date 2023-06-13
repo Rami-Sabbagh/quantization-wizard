@@ -14,6 +14,7 @@ import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
 
 import { algorithmDisplayName } from 'lib/locale';
 import { AppMode, AppModeSwitch } from 'components/app-mode-switch';
+import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
 
 interface ToolBarIconButtonProp {
     title: string;
@@ -131,7 +132,7 @@ export function ToolBar({
                 id="algorithm"
                 value={algorithm}
                 onChange={onAlgorithmChange}
-                sx={{ width: '18ch', marginTop: '1px' }}
+                sx={{ width: '18ch', minWidth: '18ch', marginTop: '1px' }}
                 margin='none'
                 disabled={!setAlgorithm}
             >
@@ -148,7 +149,7 @@ export function ToolBar({
                 onChange={onPaletteSizeChange}
                 endAdornment={<InputAdornment position="end">colors</InputAdornment>}
                 size="small"
-                sx={{ width: '12ch', marginTop: '1px' }}
+                sx={{ width: '12ch', minWidth: '12ch', marginTop: '1px' }}
                 margin='none'
                 inputProps={{
                     inputComponent: NumericFormatCustom as any,
@@ -169,7 +170,7 @@ export function ToolBar({
             ref={fileInputRef}
             onChange={onFileInputChange}
             style={{ display: 'none' }}
-            accept='image/jpeg, image/png, image/bmp, image/gif'
+            accept={ACCEPTED_IMAGE_TYPES.join(', ')}
         />
     </div>;
 }

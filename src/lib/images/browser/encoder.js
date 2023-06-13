@@ -4,6 +4,7 @@
 import { GIFEncoder, applyPalette } from 'gifenc';
 // @ts-ignore
 import { rgb888_to } from 'gifenc/src/rgb-packing';
+import { blobToDataURL } from 'lib/dataurl-utils';
 
 /**
  * @param {ImageData} imageData 
@@ -38,14 +39,5 @@ export function toDataURLIndexed(imageData, palette) {
     gif.finish();
 
     const blob = new Blob([gif.buffer], { type: 'image/gif' });
-    const reader = new FileReader();
-
-    //@ts-ignore
-    return new Promise((resolve, reject) => {
-        // @ts-ignore
-        reader.onload = (ev) => resolve(ev.target.result);
-        reader.onerror = reject;
-
-        reader.readAsDataURL(blob);
-    });
+    return blobToDataURL(blob);
 }

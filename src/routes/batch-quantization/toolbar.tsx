@@ -101,7 +101,7 @@ export function ToolBar({
                 id="algorithm"
                 value={algorithm}
                 onChange={onAlgorithmChange}
-                sx={{ width: '18ch', marginTop: '1px' }}
+                sx={{ width: '18ch', minWidth: '18ch', marginTop: '1px' }}
                 margin='none'
                 disabled={!setAlgorithm}
             >
@@ -118,7 +118,7 @@ export function ToolBar({
                 onChange={onPaletteSizeChange}
                 endAdornment={<InputAdornment position="end">colors</InputAdornment>}
                 size="small"
-                sx={{ width: '12ch', marginTop: '1px' }}
+                sx={{ width: '12ch', minWidth: '12ch', marginTop: '1px' }}
                 margin='none'
                 inputProps={{
                     inputComponent: NumericFormatCustom as any,

@@ -14,7 +14,6 @@ export function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
     const paneRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState<{ w: number, h: number } | null>(null);
-
     const [visible, setVisible] = useState(false);
 
     useEffect(() => setVisible(false), [sourceImage]);
