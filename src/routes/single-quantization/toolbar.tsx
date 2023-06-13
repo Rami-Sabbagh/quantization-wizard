@@ -15,6 +15,23 @@ import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
 import { algorithmDisplayName } from 'lib/locale';
 import { AppMode, AppModeSwitch } from 'components/app-mode-switch';
 
+interface ToolBarIconButtonProp {
+    title: string;
+    icon: JSX.Element;
+
+    onClick?: () => void;
+}
+
+function ToolBarIconButton({ title, icon, onClick }: ToolBarIconButtonProp) {
+    return <Tooltip title={title}>
+        <span>
+            <IconButton disabled={!onClick} onClick={onClick}>
+                {icon}
+            </IconButton>
+        </span>
+    </Tooltip>;
+}
+
 interface ToolBarProps {
     setMode?: (mode: AppMode) => void;
 
@@ -25,11 +42,11 @@ interface ToolBarProps {
     showPalette?: () => void;
     showHistogram?: () => void;
 
-    algorithm?: QuantizationAlgorithm,
-    setAlgorithm?: (algorithm: QuantizationAlgorithm) => void,
+    algorithm?: QuantizationAlgorithm;
+    setAlgorithm?: (algorithm: QuantizationAlgorithm) => void;
 
-    paletteSize?: string,
-    setPaletteSize?: (size: string) => void,
+    paletteSize?: string;
+    setPaletteSize?: (size: string) => void;
 
     reperformQuantization?: () => void;
 }
@@ -77,47 +94,37 @@ export function ToolBar({
     return <div className="toolbar">
         {setMode && <AppModeSwitch active='single-quantization' setMode={setMode} />}
 
-        <Tooltip title="Open/Load Image">
-            <span>
-                <IconButton onClick={openFileDialog} disabled={!onLoadImage}>
-                    <FolderOpenIcon />
-                </IconButton>
-            </span>
-        </Tooltip>
+        <ToolBarIconButton
+            title="Open/Load Image"
+            icon={<FolderOpenIcon />}
+            onClick={openFileDialog}
+        />
 
-        <Tooltip title="Export/Save Image">
-            <span>
-                <IconButton onClick={onSaveImage} disabled={!onSaveImage}>
-                    <SaveAltIcon />
-                </IconButton>
-            </span>
-        </Tooltip>
+        <ToolBarIconButton
+            title="Export/Save Image"
+            icon={<SaveAltIcon />}
+            onClick={onSaveImage}
+        />
 
-        <Tooltip title="Export/Save Indexed Image">
-            <span>
-                <IconButton onClick={onSaveIndexedImage} disabled={!onSaveIndexedImage}>
-                    <GifBoxIcon />
-                </IconButton>
-            </span>
-        </Tooltip>
+        <ToolBarIconButton
+            title="Export/Save Indexed Image"
+            icon={<GifBoxIcon />}
+            onClick={onSaveIndexedImage}
+        />
 
         <div className='spacer' />
 
-        <Tooltip title="Show Histogram">
-            <span>
-                <IconButton onClick={showHistogram} disabled={!showHistogram}>
-                    <BarChartIcon />
-                </IconButton>
-            </span>
-        </Tooltip>
+        <ToolBarIconButton
+            title="Show Histogram"
+            icon={<BarChartIcon />}
+            onClick={showHistogram}
+        />
 
-        <Tooltip title="Show Color Palette">
-            <span>
-                <IconButton onClick={showPalette} disabled={!showPalette}>
-                    <PaletteIcon />
-                </IconButton>
-            </span>
-        </Tooltip>
+        <ToolBarIconButton
+            title="Show Color Palette"
+            icon={<PaletteIcon />}
+            onClick={showPalette}
+        />
 
         {
             algorithm !== undefined && <Select
@@ -126,7 +133,7 @@ export function ToolBar({
                 onChange={onAlgorithmChange}
                 sx={{ width: '18ch', marginTop: '1px' }}
                 margin='none'
-                disabled={setAlgorithm === undefined}
+                disabled={!setAlgorithm}
             >
                 {Object.entries(algorithmDisplayName).map(([id, name]) =>
                     <MenuItem key={id} value={id}>{name}</MenuItem>
@@ -147,17 +154,15 @@ export function ToolBar({
                     inputComponent: NumericFormatCustom as any,
                 }}
                 error={paletteSizeInvalid}
-                disabled={setPaletteSize === undefined}
+                disabled={!setPaletteSize}
             />
         }
 
-        <Tooltip title="Reperform Quantization">
-            <span>
-                <IconButton onClick={reperformQuantization} disabled={!reperformQuantization}>
-                    <RefreshIcon />
-                </IconButton>
-            </span>
-        </Tooltip>
+        <ToolBarIconButton
+            title="Reperform Quantization"
+            icon={<RefreshIcon />}
+            onClick={reperformQuantization}
+        />
 
         <input
             type='file'

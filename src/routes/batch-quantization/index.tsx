@@ -9,6 +9,13 @@ interface BatchQuantizationProps {
 
 export function BatchQuantization({ setMode }: BatchQuantizationProps) {
     return <>
-        <ToolBar setMode={setMode} />
+        <ToolBar
+            setMode={setMode}
+
+            algorithm='k-means'
+            paletteSize='8'
+
+            quantizationProgress={1 / 3}
+        />
     </>;
 }
