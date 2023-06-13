@@ -89,12 +89,12 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
                 images.push({ path, image });
             }
 
-
+            let nextIndex = 0;
             for (const { path, image } of images) {
                 const result = await quantize(image, algorithm, size, controller.signal);
                 if (!result) return;
 
-                results.push({ path, dataURL: toDataURL(result.data), blob: await toBlob(result.data) });
+                results[nextIndex++] = ({ path, dataURL: toDataURL(result.data), blob: await toBlob(result.data) });
                 setResultImages([...results]);
 
                 processedPixels += image.width * image.height;
