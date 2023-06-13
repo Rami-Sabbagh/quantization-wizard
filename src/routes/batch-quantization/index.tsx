@@ -1,9 +1,13 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 
 import { ToolBar } from './toolbar';
 import { AppMode } from 'components/app-mode-switch';
-import { blobToDataURL } from 'lib/dataurl-utils';
+
 import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
+import { blobToDataURL } from 'lib/dataurl-utils';
+
+import { loadImageData, toBlob, toDataURL } from 'lib/images/browser/loader';
+import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
 
 interface BatchQuantizationProps {
     setMode?: (mode: AppMode) => void;
@@ -20,10 +24,11 @@ async function findAllFiles(directory: FileSystemDirectoryHandle, handlesList: F
     return handlesList;
 }
 
-type ImagesList = { path: string, dataURL: string }[];
+type SourceImagesList = { path: string, dataURL: string }[];
+type ResultImagesList = ({ path: string, dataURL: string, blob: Blob } | null)[];
 
-async function loadAllImages(handles: FilesHandlesList, acceptedTypes: string[] = ACCEPTED_IMAGE_TYPES): Promise<ImagesList> {
-    const results: ImagesList = [];
+async function loadAllImages(handles: FilesHandlesList, acceptedTypes: string[] = ACCEPTED_IMAGE_TYPES): Promise<SourceImagesList> {
+    const results: SourceImagesList = [];
 
     for (const { path, handle } of handles) {
         const file = await handle.getFile();
@@ -39,8 +44,68 @@ async function loadAllImages(handles: FilesHandlesList, acceptedTypes: string[] 
     return results;
 }
 
+/**
+ * Creates a file handling the creation of nested parent directories if necessary.
+ */
+async function createFile(directory: FileSystemDirectoryHandle, filePath: string): Promise<FileSystemFileHandle> {
+    const segments = filePath.split('/');
+    const fileName = segments.pop();
+
+    if (fileName === undefined) throw new Error('"filePath" can\'t be an empty string!');
+
+    for (const segment of segments)
+        directory = await directory.getDirectoryHandle(segment, { create: true });
+
+    return await directory.getFileHandle(fileName, { create: true });
+}
+
 export function BatchQuantization({ setMode }: BatchQuantizationProps) {
-    const [images, setImages] = useState<ImagesList>([]);
+    const [sourceImages, setSourceImages] = useState<SourceImagesList>([]);
+    const [resultImages, setResultImages] = useState<ResultImagesList>([]);
+    const [progress, setProgress] = useState(1);
+
+    const [paletteSize, setPaletteSize] = useState('8');
+    const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
+
+    const [quantizationToken, setQuantizationToken] = useState(Date.now());
+
+    useEffect(() => {
+        const size = Number.parseInt(paletteSize);
+        if (isNaN(size) || size < 1 || size > 256) return;
+
+        const results: ResultImagesList = sourceImages.map(() => null);
+        setResultImages([...results]);
+        setProgress(0);
+
+        const controller = new AbortController();
+
+        (async () => {
+            let totalPixels = 0, processedPixels = 0;
+            const images: { path: string, image: ImageData }[] = [];
+
+            for (const { path, dataURL } of sourceImages) {
+                const image = await loadImageData(dataURL);
+                totalPixels += image.width * image.height;
+                images.push({ path, image });
+            }
+
+
+            for (const { path, image } of images) {
+                const result = await quantize(image, algorithm, size, controller.signal);
+                if (!result) return;
+
+                results.push({ path, dataURL: toDataURL(result.data), blob: await toBlob(result.data) });
+                setResultImages([...results]);
+
+                processedPixels += image.width * image.height;
+                setProgress(processedPixels / totalPixels);
+            }
+
+            setProgress(1);
+        })();
+
+        return () => controller.abort();
+    }, [sourceImages, quantizationToken, algorithm, paletteSize]);
 
     const onLoadImages = useCallback(() => {
         showDirectoryPicker({
@@ -55,8 +120,39 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
                 const handles = await findAllFiles(directory);
                 const images = await loadAllImages(handles);
 
-                setImages(images);
-            });
+                setSourceImages(images);
+            })
+            .catch(console.error);
+    }, []);
+
+    const onSaveImages = useCallback(() => {
+        showDirectoryPicker({
+            id: 'batch-images-output',
+            mode: 'readwrite',
+            startIn: 'pictures',
+        })
+            .catch(() => console.log('User cancelled directory input.'))
+            .then(async (directory) => {
+                if (!directory) return;
+
+                // FIXME: Display a progress dialog while writing files.
+
+                for (const entry of resultImages) {
+                    if (entry === null) continue;
+                    const { path, blob } = entry;
+
+                    const handle = await createFile(directory, path);
+
+                    const stream = await handle.createWritable();
+                    await stream.write(blob);
+                    await stream.close();
+                }
+            })
+            .catch(console.error);
+    }, [resultImages]);
+
+    const reperformQuantization = useCallback(() => {
+        setQuantizationToken(Date.now());
     }, []);
 
     return <>
@@ -64,11 +160,16 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
             setMode={setMode}
 
             onLoadImages={onLoadImages}
+            onSaveImages={(progress === 1 && sourceImages.length !== 0) ? onSaveImages : undefined}
 
-            algorithm='k-means'
-            paletteSize='8'
+            algorithm={algorithm}
+            setAlgorithm={setAlgorithm}
 
-            quantizationProgress={1 / 3}
+            paletteSize={paletteSize}
+            setPaletteSize={setPaletteSize}
+
+            quantizationProgress={progress}
+            reperformQuantization={sourceImages.length === 0 ? undefined : reperformQuantization}
         />
     </>;
 }
