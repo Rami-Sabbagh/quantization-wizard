@@ -15,6 +15,8 @@ import { HistogramDialog } from 'components/histogram-dialog';
 
 import { ToolBar } from './toolbar';
 import { AppMode } from 'components/app-mode-switch';
+import { blobToDataURL } from 'lib/dataurl-utils';
+import { encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 
 interface SingleQuantizationProps {
     setMode?: (mode: AppMode) => void;
@@ -23,7 +25,7 @@ interface SingleQuantizationProps {
 export function SingleQuantization({ setMode }: SingleQuantizationProps) {
     const [sourceImage, setSourceImage] = useState(defaultImage);
     const [resultImage, setResultImage] = useState<string | undefined>(undefined);
-    const [resultIndexedImage, setResultIndexedImage] = useState<string | undefined>(undefined);
+    const [resultIndexedImage, setResultIndexedImage] = useState<Blob | undefined>(undefined);
 
     const [histogramDialogOpen, setHistogramDialogOpen] = useState(false);
     const [paletteDialogOpen, setPaletteDialogOpen] = useState(false);
@@ -48,7 +50,12 @@ export function SingleQuantization({ setMode }: SingleQuantizationProps) {
             const image = await loadImageData(sourceImage);
             const result = await quantize(image, algorithm, size, controller.signal);
             if (result) {
-                setResultIndexedImage(await toDataURLIndexed(result.data, result.palette));
+                const indexedImage = encodeIndexedBinImage(result.data, {
+                    palette: result.palette,
+                    histogram: result.histogram,
+                });
+
+                setResultIndexedImage(indexedImage);
                 setResultImage(toDataURL(result.data));
                 setPalette(result.palette);
                 setHistogram(result.histogram);
@@ -76,7 +83,7 @@ export function SingleQuantization({ setMode }: SingleQuantizationProps) {
         if (!resultIndexedImage) return;
 
         const timestamp = new Date().toLocaleString();
-        saveAs(resultIndexedImage, `${timestamp} - Quantization Indexed Output.gif`);
+        saveAs(resultIndexedImage, `${timestamp} - Quantization Indexed Output.bin`);
     }, [resultIndexedImage]);
 
     const showHistogram = useCallback(() => {
