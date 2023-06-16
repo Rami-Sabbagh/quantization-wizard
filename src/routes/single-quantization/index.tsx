@@ -16,7 +16,7 @@ import { HistogramDialog } from 'components/histogram-dialog';
 import { ToolBar } from './toolbar';
 import { AppMode } from 'components/app-mode-switch';
 import { blobToDataURL } from 'lib/dataurl-utils';
-import { encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
+import { decodeIndexedBinImage, encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 
 interface SingleQuantizationProps {
     setMode?: (mode: AppMode) => void;
@@ -68,7 +68,11 @@ export function SingleQuantization({ setMode }: SingleQuantizationProps) {
 
     const onLoadImage = useCallback((imageFile: File) => {
         URL.revokeObjectURL(sourceImage);
-        setSourceImage(URL.createObjectURL(imageFile));
+        if (imageFile.type === 'application/octet-stream')
+            decodeIndexedBinImage(imageFile).then(({ data }) => {
+                setSourceImage(toDataURL(data));
+            }).catch(console.error);
+        else setSourceImage(URL.createObjectURL(imageFile));
     }, [sourceImage, setSourceImage]);
 
 

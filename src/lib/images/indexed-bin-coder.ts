@@ -15,7 +15,7 @@ O==------------------:   Diagram   :------------------==O
     |   +-----------------------------+     
     |   |  1 byte: colors count       |         28
     | H +-----------------------------+
-    |   |  3 bytes: memory alignment  |         29 -> 31
+    |   |  3 bytes: memory alignment  |         29 --> 31
     |   +-----------------------------+     
     |   |  4 bytes: image width       |         32 --> 35
     |   +-----------------------------+     
@@ -73,20 +73,34 @@ export function encodeIndexedBinImage(imageData: ImageData, report: Quantization
     dimensionsArray[0] = width;
     dimensionsArray[1] = height;
 
+    const paletteLookup: Record<number, Record<number, number>> = {};
+
+    for (let i = 0; i < colorsCount; i++) {
+        for (let j = 0; j < 3; j++) report.palette[i][j] = Math.floor(report.palette[i][j]);
+        report.histogram[i] = Math.floor(report.histogram[i]);
+    }
+
     for (let i = 0; i < colorsCount; i++) {
         const [r, g, b, a] = report.palette[i];
         colorsArray[i] = (r << 0) | (g << 8) | (b << 16) | (a << 24);
+
+        const alphaArray = paletteLookup[a] ?? {};
+        alphaArray[(r << 0) | (g << 8) | (b << 16)] = i;
+        paletteLookup[a] = alphaArray;
     }
 
     histogramArray.set(report.histogram);
 
-    const paletteLookup: Record<number, number> = {};
-    for (let i = 0; i < colorsCount; i++)
-        paletteLookup[colorsArray[i]] = i;
+    for (let i = 0; i < width * height; i++) {
+        const r = imageData.data[i * 4 + 0];
+        const g = imageData.data[i * 4 + 1];
+        const b = imageData.data[i * 4 + 2];
+        const a = imageData.data[i * 4 + 3];
 
-    const rgbaData = new Uint32Array(imageData.data.buffer);
-    for (let i = 0; i < rgbaData.length; i++)
-        indexesArray[i] = paletteLookup[rgbaData[i]] ?? 0;
+        const colorId: number | undefined = paletteLookup[a]?.[(r << 0) | (g << 8) | (b << 16)];
+        if (colorId === undefined) throw new Error('Color out of palette!');
+        indexesArray[i] = colorId;
+    }
 
     return new Blob([fileBuffer], { type: 'application/octet-stream' });
 }
