@@ -1,14 +1,175 @@
-import React from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 
 import { ToolBar } from './toolbar';
 import { AppMode } from 'components/app-mode-switch';
+
+import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
+import { blobToDataURL } from 'lib/dataurl-utils';
+
+import { loadImageData, toBlob, toDataURL } from 'lib/images/browser/loader';
+import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
 
 interface BatchQuantizationProps {
     setMode?: (mode: AppMode) => void;
 }
 
+type FilesHandlesList = { path: string, handle: FileSystemFileHandle }[];
+
+async function findAllFiles(directory: FileSystemDirectoryHandle, handlesList: FilesHandlesList = [], basePath = ''): Promise<FilesHandlesList> {
+    for await (const [name, handle] of directory.entries()) {
+        if (handle.kind === 'file') handlesList.push({ path: `${basePath}${name}`, handle });
+        else if (handle.kind === 'directory') await findAllFiles(handle, handlesList, `${basePath}${name}/`);
+    }
+
+    return handlesList;
+}
+
+type SourceImagesList = { path: string, dataURL: string }[];
+type ResultImagesList = ({ path: string, dataURL: string, blob: Blob } | null)[];
+
+async function loadAllImages(handles: FilesHandlesList, acceptedTypes: string[] = ACCEPTED_IMAGE_TYPES): Promise<SourceImagesList> {
+    const results: SourceImagesList = [];
+
+    for (const { path, handle } of handles) {
+        const file = await handle.getFile();
+
+        if (acceptedTypes && !acceptedTypes.includes(file.type)) {
+            console.warn(`Unaccepted file "${path}" with type "${file.type}"`);
+            continue;
+        };
+
+        results.push({ path, dataURL: await blobToDataURL(file) })
+    }
+
+    return results;
+}
+
+/**
+ * Creates a file handling the creation of nested parent directories if necessary.
+ */
+async function createFile(directory: FileSystemDirectoryHandle, filePath: string): Promise<FileSystemFileHandle> {
+    const segments = filePath.split('/');
+    const fileName = segments.pop();
+
+    if (fileName === undefined) throw new Error('"filePath" can\'t be an empty string!');
+
+    for (const segment of segments)
+        directory = await directory.getDirectoryHandle(segment, { create: true });
+
+    return await directory.getFileHandle(fileName, { create: true });
+}
+
 export function BatchQuantization({ setMode }: BatchQuantizationProps) {
+    const [sourceImages, setSourceImages] = useState<SourceImagesList>([]);
+    const [resultImages, setResultImages] = useState<ResultImagesList>([]);
+    const [progress, setProgress] = useState(1);
+
+    const [paletteSize, setPaletteSize] = useState('8');
+    const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
+
+    const [quantizationToken, setQuantizationToken] = useState(Date.now());
+
+    useEffect(() => {
+        const size = Number.parseInt(paletteSize);
+        if (isNaN(size) || size < 1 || size > 256) return;
+
+        const results: ResultImagesList = sourceImages.map(() => null);
+        setResultImages([...results]);
+        setProgress(0);
+
+        const controller = new AbortController();
+
+        (async () => {
+            let totalPixels = 0, processedPixels = 0;
+            const images: { path: string, image: ImageData }[] = [];
+
+            for (const { path, dataURL } of sourceImages) {
+                const image = await loadImageData(dataURL);
+                totalPixels += image.width * image.height;
+                images.push({ path, image });
+            }
+
+            let nextIndex = 0;
+            for (const { path, image } of images) {
+                const result = await quantize(image, algorithm, size, controller.signal);
+                if (!result) return;
+
+                results[nextIndex++] = ({ path, dataURL: toDataURL(result.data), blob: await toBlob(result.data) });
+                setResultImages([...results]);
+
+                processedPixels += image.width * image.height;
+                setProgress(processedPixels / totalPixels);
+            }
+
+            setProgress(1);
+        })();
+
+        return () => controller.abort();
+    }, [sourceImages, quantizationToken, algorithm, paletteSize]);
+
+    const onLoadImages = useCallback(() => {
+        showDirectoryPicker({
+            id: 'batch-images-input',
+            mode: 'read',
+            startIn: 'pictures',
+        })
+            .catch(() => console.log('User cancelled directory input.'))
+            .then(async (directory) => {
+                if (!directory) return;
+
+                const handles = await findAllFiles(directory);
+                const images = await loadAllImages(handles);
+
+                setSourceImages(images);
+            })
+            .catch(console.error);
+    }, []);
+
+    const onSaveImages = useCallback(() => {
+        showDirectoryPicker({
+            id: 'batch-images-output',
+            mode: 'readwrite',
+            startIn: 'pictures',
+        })
+            .catch(() => console.log('User cancelled directory input.'))
+            .then(async (directory) => {
+                if (!directory) return;
+
+                // FIXME: Display a progress dialog while writing files.
+
+                for (const entry of resultImages) {
+                    if (entry === null) continue;
+                    const { path, blob } = entry;
+
+                    const handle = await createFile(directory, path);
+
+                    const stream = await handle.createWritable();
+                    await stream.write(blob);
+                    await stream.close();
+                }
+            })
+            .catch(console.error);
+    }, [resultImages]);
+
+    const reperformQuantization = useCallback(() => {
+        setQuantizationToken(Date.now());
+    }, []);
+
     return <>
-        <ToolBar setMode={setMode} />
+        <ToolBar
+            setMode={setMode}
+
+            onLoadImages={onLoadImages}
+            onSaveImages={(progress === 1 && sourceImages.length !== 0) ? onSaveImages : undefined}
+
+            algorithm={algorithm}
+            setAlgorithm={setAlgorithm}
+
+            paletteSize={paletteSize}
+            setPaletteSize={setPaletteSize}
+
+            quantizationProgress={progress}
+            reperformQuantization={sourceImages.length === 0 ? undefined : reperformQuantization}
+        />
     </>;
 }

@@ -51,3 +51,24 @@ export function toDataURL(imageData: ImageData): string {
 
     return canvasElement.toDataURL();
 }
+
+export async function toBlob(imageData: ImageData): Promise<Blob> {
+    canvasElement.width = imageData.width;
+    canvasElement.height = imageData.height;
+
+    if (canvasElement.width !== imageData.width || canvasElement.height !== imageData.height)
+        throw new Error('Failed to resized the canvas to match the image dimensions!');
+
+    const ctx = canvasElement.getContext('2d', { willReadFrequently: true });
+    if (!ctx) throw new Error('Failed to create 2D context');
+
+    ctx.clearRect(0, 0, imageData.width, imageData.height);
+    ctx.putImageData(imageData, 0, 0);
+
+    return new Promise<Blob>((resolve, reject) => {
+        canvasElement.toBlob((blob) => {
+            if (blob !== null) resolve(blob);
+            else reject('Failed to create blob.');
+        })
+    });
+}

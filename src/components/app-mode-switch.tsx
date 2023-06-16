@@ -30,7 +30,7 @@ export function AppModeSwitch({ active, setMode }: AppModeSwitchProps) {
         id="app-mode"
         value={active}
         onChange={onChange}
-        sx={{ width: '22ch', marginTop: '1px' }}
+        sx={{ minWidth: '23ch', marginTop: '1px' }}
         margin='none'
     >
         {Object.entries(applicationModes).map(([id, name]) =>
