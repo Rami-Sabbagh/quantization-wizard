@@ -60,7 +60,7 @@ function updateCentroids(image: RGBAImage, centroids: RGBA[], histogram: number[
         histogram[i] = count;
 
         if (count === 0) count = 1;
-        for (let j = 0; j < 3; j++) centroid[j] /= count;
+        for (let j = 0; j < 3; j++) centroid[j] = Math.floor(centroid[j] / count);
     }
 }
 
