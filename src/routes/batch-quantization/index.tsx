@@ -8,6 +8,7 @@ import { blobToDataURL } from 'lib/dataurl-utils';
 
 import { loadImageData, toBlob, toDataURL } from 'lib/images/browser/loader';
 import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
+import { decodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 
 interface BatchQuantizationProps {
     setMode?: (mode: AppMode) => void;
@@ -38,7 +39,11 @@ async function loadAllImages(handles: FilesHandlesList, acceptedTypes: string[] 
             continue;
         };
 
-        results.push({ path, dataURL: await blobToDataURL(file) })
+        if (file.type === 'application/octet-stream') {
+            results.push({ path, dataURL: toDataURL((await decodeIndexedBinImage(file)).data) });
+        } else {
+            results.push({ path, dataURL: await blobToDataURL(file) });
+        }
     }
 
     return results;
