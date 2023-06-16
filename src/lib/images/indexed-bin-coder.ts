@@ -45,7 +45,7 @@ O==------------------:   Details   :------------------==O
 
 */
 
-import { QuantizationReport } from './interfaces';
+import { QuantizationReport, RGBA } from './interfaces';
 
 const MAGIC_TAG = new Uint8Array([0x52, 0x41, 0x4D, 0x49, 0x27, 0x53, 0x20, 0x49, 0x4E, 0x44, 0x45, 0x58, 0x45, 0x44, 0x20, 0x49, 0x4D, 0x41, 0x47, 0x45, 0x20, 0x46, 0x4F, 0x52, 0x4D, 0x41, 0x54]);
 
@@ -91,6 +91,68 @@ export function encodeIndexedBinImage(imageData: ImageData, report: Quantization
     return new Blob([fileBuffer], { type: 'application/octet-stream' });
 }
 
-export function decodeIndexedBinImage() {
-    throw new Error('Not implemented!');
+interface IndexedImage {
+    data: ImageData;
+    palette: RGBA[];
+    histogram: number[];
+}
+
+export async function decodeIndexedBinImage(blob: Blob): Promise<IndexedImage> {
+    const fileBuffer = await blob.arrayBuffer();
+    if (fileBuffer.byteLength < 40) throw new Error('File too small!');
+
+    const headerLength = 40;
+    const headerBuffer = new Uint8Array(fileBuffer, 0, headerLength);
+
+    for (let i = 0; i < MAGIC_TAG.length; i++)
+        if (headerBuffer[i] !== MAGIC_TAG[i])
+            throw new Error('Invalid magic tag.');
+
+    if (headerBuffer[27] !== 0x1B) throw new Error('Invalid escape character!');
+    const colorsCount = headerBuffer[28];
+
+    const dimensionsArray = new Uint32Array(fileBuffer, 32, 2);
+    const width = dimensionsArray[0], height = dimensionsArray[1];
+
+    const colorsLength = colorsCount * 4;
+    const histogramLength = 4 * colorsCount;
+    const indexesLength = width * height;
+    const fileLength = headerLength + colorsLength + histogramLength + indexesLength;
+
+    if (fileBuffer.byteLength !== fileLength) throw new Error('Invalid file size!');
+
+    const colorsArray = new Uint8Array(fileBuffer, headerLength, colorsLength * 4);
+    const histogramArray = new Uint32Array(fileBuffer, headerLength + colorsLength, histogramLength);
+    const indexesArray = new Uint8Array(fileBuffer, headerLength + colorsLength + histogramLength, indexesLength);
+
+    const palette: RGBA[] = [];
+    for (let i = 0; i < colorsCount; i++) {
+        palette[i] = [
+            colorsArray[i * 4 + 0],
+            colorsArray[i * 4 + 1],
+            colorsArray[i * 4 + 2],
+            colorsArray[i * 4 + 3],
+        ];
+    }
+
+    const histogram = Array.from(histogramArray);
+    const data = new ImageData(width, height);
+
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const i = y * width + x;
+            const [r, g, b, a] = palette[indexesArray[i]];
+
+            data.data[i * 4 + 0] = r;
+            data.data[i * 4 + 1] = g;
+            data.data[i * 4 + 2] = b;
+            data.data[i * 4 + 3] = a;
+        }
+    }
+
+    return {
+        palette,
+        histogram,
+        data,
+    };
 }
