@@ -5,7 +5,6 @@ import defaultImage from 'assets/gimp-2.10-splash.png';
 import { saveAs } from 'file-saver';
 
 import { loadImageData, toDataURL } from 'lib/images/browser/loader';
-import { toDataURLIndexed } from 'lib/images/browser/encoder';
 import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
 import { RGBA } from 'lib/images/interfaces';
 
@@ -15,7 +14,6 @@ import { HistogramDialog } from 'components/histogram-dialog';
 
 import { ToolBar } from './toolbar';
 import { AppMode } from 'components/app-mode-switch';
-import { blobToDataURL } from 'lib/dataurl-utils';
 import { decodeIndexedBinImage, encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 
 interface SingleQuantizationProps {
