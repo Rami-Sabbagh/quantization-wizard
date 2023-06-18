@@ -1,10 +1,10 @@
 import { QuantizationReport, RGBA, RGBAImage } from '../interfaces';
 
 function distance(c1: RGBA, c2: RGBA): number {
-    const [r1, g1, b1] = c1;
-    const [r2, g2, b2] = c2;
+    const [r1, g1, b1, a1] = c1;
+    const [r2, g2, b2, a2] = c2;
 
-    return Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
+    return Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2) + Math.abs(a1 - a2);
 }
 
 function updateClusters(image: RGBAImage, centroids: RGBA[], clusters: number[]): boolean {
@@ -44,7 +44,7 @@ function updateCentroids(image: RGBAImage, centroids: RGBA[], histogram: number[
 
     for (let i = 0; i < centroids.length; i++) {
         const centroid = centroids[i];
-        for (let j = 0; j < 3; j++) centroid[j] = 0;
+        for (let j = 0; j < 4; j++) centroid[j] = 0;
         let count = 0;
 
         for (let y = 0; y < image.height; y++) {
@@ -52,7 +52,7 @@ function updateCentroids(image: RGBAImage, centroids: RGBA[], histogram: number[
                 if (clusters[y * image.width + x] !== i) continue;
                 image.getPixel(x, y, pixel);
 
-                for (let j = 0; j < 3; j++) centroid[j] += pixel[j];
+                for (let j = 0; j < 4; j++) centroid[j] += pixel[j];
                 count++;
             }
         }
@@ -60,7 +60,7 @@ function updateCentroids(image: RGBAImage, centroids: RGBA[], histogram: number[
         histogram[i] = count;
 
         if (count === 0) count = 1;
-        for (let j = 0; j < 3; j++) centroid[j] = Math.floor(centroid[j] / count);
+        for (let j = 0; j < 4; j++) centroid[j] = Math.floor(centroid[j] / count);
     }
 }
 
