@@ -9,6 +9,8 @@ import { blobToDataURL } from 'lib/dataurl-utils';
 import { loadImageData, toBlob, toDataURL } from 'lib/images/browser/loader';
 import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
 import { decodeIndexedBinImage, encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
+import { CanvasLayer } from 'components/canvas-layer';
+import { CompareFrame } from 'components/compare-frame';
 
 interface BatchQuantizationProps {
     setMode?: (mode: AppMode) => void;
@@ -27,6 +29,7 @@ async function findAllFiles(directory: FileSystemDirectoryHandle, handlesList: F
 
 type SourceImagesList = { path: string, dataURL: string }[];
 type ResultImagesList = ({ path: string, dataURL: string, blob: Blob, indexedBlob: Blob } | null)[];
+type DimensionsList = { w: number, h: number }[];
 
 async function loadAllImages(handles: FilesHandlesList, acceptedTypes: string[] = ACCEPTED_IMAGE_TYPES): Promise<SourceImagesList> {
     const results: SourceImagesList = [];
@@ -67,18 +70,23 @@ async function createFile(directory: FileSystemDirectoryHandle, filePath: string
 export function BatchQuantization({ setMode }: BatchQuantizationProps) {
     const [sourceImages, setSourceImages] = useState<SourceImagesList>([]);
     const [resultImages, setResultImages] = useState<ResultImagesList>([]);
+    const [dimensions, setDimensions] = useState<DimensionsList>([]);
     const [progress, setProgress] = useState(1);
 
     const [paletteSize, setPaletteSize] = useState('8');
     const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
 
     const [quantizationToken, setQuantizationToken] = useState(Date.now());
+    const [canvasToken, setCanvasToken] = useState(Date.now());
 
     useEffect(() => {
         const size = Number.parseInt(paletteSize);
         if (isNaN(size) || size < 1 || size > 256) return;
 
+        setCanvasToken(Date.now());
+
         const results: ResultImagesList = sourceImages.map(() => null);
+
         setResultImages([...results]);
         setProgress(0);
 
@@ -87,12 +95,16 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
         (async () => {
             let totalPixels = 0, processedPixels = 0;
             const images: { path: string, image: ImageData }[] = [];
+            const dimensions: DimensionsList = [];
 
             for (const { path, dataURL } of sourceImages) {
                 const image = await loadImageData(dataURL);
                 totalPixels += image.width * image.height;
                 images.push({ path, image });
+                dimensions.push({ w: image.width, h: image.height });
             }
+
+            setDimensions(dimensions);
 
             let nextIndex = 0;
             for (const { path, image } of images) {
@@ -128,6 +140,7 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
                 const handles = await findAllFiles(directory);
                 const images = await loadAllImages(handles);
 
+                setDimensions([]);
                 setSourceImages(images);
             })
             .catch(console.error);
@@ -189,13 +202,22 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
         setQuantizationToken(Date.now());
     }, []);
 
+    const allowSaving = progress === 1 && sourceImages.length !== 0;
+    const showPreview = dimensions.length !== 0;
+
     return <>
+        <CanvasLayer resetToken={showPreview ? canvasToken : undefined}>
+            {showPreview && dimensions.map(({ w, h }, index) => <CompareFrame
+                source={sourceImages[index].dataURL} result={resultImages[index]?.dataURL}
+                width={w} height={h} key={sourceImages[index].path}
+            />)}
+        </CanvasLayer>
         <ToolBar
             setMode={setMode}
 
             onLoadImages={onLoadImages}
-            onSaveImages={(progress === 1 && sourceImages.length !== 0) ? onSaveImages : undefined}
-            onSaveIndexedImages={(progress === 1 && sourceImages.length !== 0) ? onSaveIndexedImages : undefined}
+            onSaveImages={allowSaving ? onSaveImages : undefined}
+            onSaveIndexedImages={allowSaving ? onSaveIndexedImages : undefined}
 
             algorithm={algorithm}
             setAlgorithm={setAlgorithm}

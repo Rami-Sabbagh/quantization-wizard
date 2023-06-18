@@ -63,6 +63,11 @@ export function CanvasLayer({ resetToken, children }: CanvasLayerProps) {
             if (scale + delta > 20) return;
 
             pane.style.scale = (scale + delta).toString();
+            
+            container.scrollTo(
+                (container.scrollWidth - container.clientWidth) * .5,
+                (container.scrollHeight - container.clientHeight - 50) * .5,
+            );
         };
 
         overlay.addEventListener('pointerdown', pointerListener);

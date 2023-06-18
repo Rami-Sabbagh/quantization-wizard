@@ -8,26 +8,36 @@
     overflow: hidden;
 
     background: #0f0f0f;
+}
 
-    .canvas-pane {
-        width: min-content;
-        height: min-content;
+.canvas-pane {
+    min-width: min-content;
+    width: max-content;
+    max-width: 300vw;
 
-        padding: 80vh 80vw;
+    height: min-content;
 
-        * {
-            margin: 2px;
-            image-rendering: pixelated;
-        }
+    padding: 80vh 80vw;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+
+    * {
+        margin: 2px;
+        image-rendering: pixelated;
     }
+}
 
-    .canvas-input-overlay {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
+.canvas-input-overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 
-        cursor: grab;
-    }
+    cursor: grab;
 }
