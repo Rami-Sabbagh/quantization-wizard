@@ -13,7 +13,7 @@ type ColorBarProps = {
 function ColorBar({ color, percentage }: ColorBarProps) {
     return <div className='color-bar' style={{
         backgroundColor: rgba2hex(color),
-        ['--percentage']: percentage,
+        '--percentage': percentage,
     } as React.CSSProperties} />
 }
 
@@ -31,7 +31,7 @@ export function ColorsHistogram({ palette, histogram }: ColorsHistogramProps) {
     data.sort((a, b) => b[1] - a[1]);
 
     return <div className="colors-histogram" style={{
-        ['--columns']: palette.length,
+        '--columns': palette.length,
     } as React.CSSProperties}>
         {data.map(([color, count, id]) =>
             <ColorBar key={id} color={color} percentage={count / maxCount} />
