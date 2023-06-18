@@ -1,0 +1,33 @@
+.canvas-layer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    overflow: hidden;
+
+    background: #0f0f0f;
+
+    .canvas-pane {
+        width: min-content;
+        height: min-content;
+
+        padding: 80vh 80vw;
+
+        * {
+            margin: 2px;
+            image-rendering: pixelated;
+        }
+    }
+
+    .canvas-input-overlay {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        cursor: grab;
+    }
+}

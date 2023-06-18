@@ -1,5 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 
+import "./canvas-layer.scss";
+
 type CanvasLayerProps = {
     resetToken?: number;
     children?: React.ReactNode;
