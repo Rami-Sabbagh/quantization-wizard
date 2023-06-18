@@ -14,7 +14,7 @@ import { BatchQuantization } from 'routes/batch-quantization';
 import { SimilarSearch } from 'routes/similar-search';
 
 export default function App() {
-    const [activeMode, setMode] = useState<AppMode>('single-quantization');
+    const [activeMode, setMode] = useState<AppMode>('similar-search');
 
     if (activeMode === 'single-quantization') return <SingleQuantization setMode={setMode} />;
     else if (activeMode === 'batch-quantization') return <BatchQuantization setMode={setMode} />;
