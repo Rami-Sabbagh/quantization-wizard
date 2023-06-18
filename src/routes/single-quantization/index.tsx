@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
-import defaultImage from 'assets/gimp-2.10-splash.png';
+import defaultImage from 'assets/grad_default.png';
 
 import { saveAs } from 'file-saver';
 
