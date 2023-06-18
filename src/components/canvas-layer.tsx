@@ -1,34 +1,33 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
-
-
-import { Skeleton } from '@mui/material';
+import React, { useRef, useEffect, useState } from 'react';
 
 type CanvasLayerProps = {
-    sourceImage: string;
-    resultImage?: string;
+    resetToken?: number;
+    children?: React.ReactNode;
 };
 
-
-export function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
+export function CanvasLayer({ resetToken, children }: CanvasLayerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const paneRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
-    const [dimensions, setDimensions] = useState<{ w: number, h: number } | null>(null);
+
     const [visible, setVisible] = useState(false);
 
-    useEffect(() => setVisible(false), [sourceImage]);
+    useEffect(() => {
+        if (!resetToken) setVisible(false);
+        else {
+            const container = containerRef.current, pane = paneRef.current;
+            if (!container || !pane) return;
 
-    const centerCanvas = useCallback(() => {
-        const container = containerRef.current;
-        if (!container) return;
+            container.scrollTo(
+                (container.scrollWidth - container.clientWidth) * .5,
+                (container.scrollHeight - container.clientHeight - 50) * .5,
+            );
 
-        container.scrollTo(
-            (container.scrollWidth - container.clientWidth) * .5,
-            (container.scrollHeight - container.clientHeight - 50) * .5,
-        );
+            pane.style.scale = '1';
 
-        setVisible(true);
-    }, []);
+            setVisible(true);
+        }
+    }, [resetToken]);
 
     useEffect(() => {
         const container = containerRef.current, pane = paneRef.current, overlay = overlayRef.current;
@@ -77,29 +76,13 @@ export function CanvasLayer({ sourceImage, resultImage }: CanvasLayerProps) {
             overlay.removeEventListener('pointerout', pointerListener);
             overlay.removeEventListener('wheel', wheelListener);
         };
-    }, [centerCanvas]);
+    }, []);
 
-    const onLoad = useCallback<React.ReactEventHandler<HTMLImageElement>>((ev) => {
-        const pane = paneRef.current;
-        if (pane) pane.style.scale = '1';
-
-        setTimeout(centerCanvas, 20);
-        setDimensions({ w: ev.currentTarget.width, h: ev.currentTarget.height });
-    }, [centerCanvas]);
 
     return <>
         <div ref={containerRef} className="canvas-layer" style={{ opacity: visible ? 1 : 0 }}>
-            <div ref={paneRef} className="canvas-pane" style={{
-                writingMode: (dimensions && dimensions.w <= dimensions.h) ? 'vertical-lr' : 'horizontal-tb'
-            }}>
-                <img src={sourceImage} alt='Original' onLoad={onLoad} />
-                {resultImage
-                    ? <img src={resultImage} alt='Quantized' />
-                    : <Skeleton
-                        variant='rectangular'
-                        width={dimensions?.w}
-                        height={dimensions?.h}
-                    />}
+            <div ref={paneRef} className="canvas-pane">
+                {children}
             </div>
         </div>
         <div ref={overlayRef} className="canvas-input-overlay" />
