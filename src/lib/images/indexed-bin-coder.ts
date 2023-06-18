@@ -45,7 +45,7 @@ O==------------------:   Details   :------------------==O
 
 */
 
-import { QuantizationReport, RGBA } from './interfaces';
+import { IndexedImage, QuantizationReport, RGBA } from './interfaces';
 
 const MAGIC_TAG = new Uint8Array([0x52, 0x41, 0x4D, 0x49, 0x27, 0x53, 0x20, 0x49, 0x4E, 0x44, 0x45, 0x58, 0x45, 0x44, 0x20, 0x49, 0x4D, 0x41, 0x47, 0x45, 0x20, 0x46, 0x4F, 0x52, 0x4D, 0x41, 0x54]);
 
@@ -103,12 +103,6 @@ export function encodeIndexedBinImage(imageData: ImageData, report: Quantization
     }
 
     return new Blob([fileBuffer], { type: 'application/octet-stream' });
-}
-
-interface IndexedImage {
-    data: ImageData;
-    palette: RGBA[];
-    histogram: number[];
 }
 
 export async function decodeIndexedBinImage(blob: Blob): Promise<IndexedImage> {

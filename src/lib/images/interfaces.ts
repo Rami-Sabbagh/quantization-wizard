@@ -18,3 +18,9 @@ export interface QuantizationReport {
     palette: RGBA[],
     histogram: number[],
 }
+
+export interface IndexedImage {
+    data: ImageData;
+    palette: RGBA[];
+    histogram: number[];
+}
