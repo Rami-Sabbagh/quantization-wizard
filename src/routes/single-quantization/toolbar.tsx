@@ -101,6 +101,8 @@ export function ToolBar({
             onClick={openFileDialog}
         />
 
+        <div className="separator" />
+
         <ToolBarIconButton
             title="Export/Save Image"
             icon={<SaveAltIcon />}

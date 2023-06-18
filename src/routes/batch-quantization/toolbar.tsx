@@ -77,6 +77,8 @@ export function ToolBar({
             onClick={onLoadImages}
         />
 
+        <div className="separator" />
+
         <ToolBarIconButton
             title="Export/Save Images"
             icon={<SaveAltIcon />}
