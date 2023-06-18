@@ -8,7 +8,7 @@ import { blobToDataURL } from 'lib/dataurl-utils';
 
 import { loadImageData, toBlob, toDataURL } from 'lib/images/browser/loader';
 import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
-import { decodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
+import { decodeIndexedBinImage, encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 
 interface BatchQuantizationProps {
     setMode?: (mode: AppMode) => void;
@@ -26,7 +26,7 @@ async function findAllFiles(directory: FileSystemDirectoryHandle, handlesList: F
 }
 
 type SourceImagesList = { path: string, dataURL: string }[];
-type ResultImagesList = ({ path: string, dataURL: string, blob: Blob } | null)[];
+type ResultImagesList = ({ path: string, dataURL: string, blob: Blob, indexedBlob: Blob } | null)[];
 
 async function loadAllImages(handles: FilesHandlesList, acceptedTypes: string[] = ACCEPTED_IMAGE_TYPES): Promise<SourceImagesList> {
     const results: SourceImagesList = [];
@@ -99,7 +99,10 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
                 const result = await quantize(image, algorithm, size, controller.signal);
                 if (!result) return;
 
-                results[nextIndex++] = ({ path, dataURL: toDataURL(result.data), blob: await toBlob(result.data) });
+                const indexedBlob = encodeIndexedBinImage(result.data, result);
+                const blob = await toBlob(result.data);
+
+                results[nextIndex++] = ({ path, dataURL: toDataURL(result.data), blob, indexedBlob });
                 setResultImages([...results]);
 
                 processedPixels += image.width * image.height;
@@ -156,6 +159,32 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
             .catch(console.error);
     }, [resultImages]);
 
+    const onSaveIndexedImages = useCallback(() => {
+        showDirectoryPicker({
+            id: 'batch-images-output',
+            mode: 'readwrite',
+            startIn: 'pictures',
+        })
+            .catch(() => console.log('User cancelled directory input.'))
+            .then(async (directory) => {
+                if (!directory) return;
+
+                // FIXME: Display a progress dialog while writing files.
+
+                for (const entry of resultImages) {
+                    if (entry === null) continue;
+                    const { path, indexedBlob } = entry;
+
+                    const handle = await createFile(directory, `${path}.bin`);
+
+                    const stream = await handle.createWritable();
+                    await stream.write(indexedBlob);
+                    await stream.close();
+                }
+            })
+            .catch(console.error);
+    }, [resultImages]);
+
     const reperformQuantization = useCallback(() => {
         setQuantizationToken(Date.now());
     }, []);
@@ -166,6 +195,7 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
 
             onLoadImages={onLoadImages}
             onSaveImages={(progress === 1 && sourceImages.length !== 0) ? onSaveImages : undefined}
+            onSaveIndexedImages={(progress === 1 && sourceImages.length !== 0) ? onSaveIndexedImages : undefined}
 
             algorithm={algorithm}
             setAlgorithm={setAlgorithm}
