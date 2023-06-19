@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 
-import { InputAdornment, OutlinedInput } from '@mui/material';
+import { InputAdornment, TextField } from '@mui/material';
 import { NumericFormatCustom } from './numeric-format-custom';
 
 interface PaletteSizeBoxProps {
@@ -23,15 +23,15 @@ export function PaletteSizeBox({ paletteSize, setPaletteSize, fullSize }: Palett
     const paletteSizeParsed = Number.parseInt(paletteSize ?? '');
     const paletteSizeInvalid = isNaN(paletteSizeParsed) || paletteSizeParsed < 1 || paletteSizeParsed > 256;
 
-    return <OutlinedInput
+    return <TextField
         id="palette-size"
         value={paletteSize}
         onChange={onPaletteSizeChange}
-        endAdornment={<InputAdornment position="end">colors</InputAdornment>}
         size={fullSize ? 'medium' : 'small'}
         sx={fullSize ? { width: '100%' } : { width: '12ch', minWidth: '12ch', marginTop: '1px' }}
         margin='none'
-        inputProps={{
+        InputProps={{
+            endAdornment: <InputAdornment position="end">colors</InputAdornment>,
             inputComponent: NumericFormatCustom as any,
         }}
         error={paletteSizeInvalid}
