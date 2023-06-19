@@ -12,10 +12,11 @@ import { QuantizationAlgorithm } from 'lib/images/browser/async';
 import { NumericFormatCustom } from './numeric-format-custom';
 
 type CropFieldHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+type CropSide = 'left' | 'right' | 'top' | 'bottom';
 
 interface CropFieldProps {
-    side: 'left' | 'right' | 'top' | 'bottom';
-    value?: string;
+    side: CropSide;
+    value?: Record<CropSide, string>;
     invalid?: boolean;
     onChange?: CropFieldHandler;
 }
@@ -26,7 +27,7 @@ function CropField({ side, value, invalid, onChange }: CropFieldProps) {
         name={side}
         label={side}
 
-        value={value}
+        value={value?.[side]}
         onChange={onChange}
 
         size='small'
@@ -54,9 +55,20 @@ interface TargetImageDialogProps {
 export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
     const [paletteSize, setPaletteSize] = useState('8');
     const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
+    const [cropLimits, setCropLimits] = useState({ left: '', right: '', top: '', bottom: '' });
 
     const initScale = 40;
     const [scale, setScale] = useState(initScale);
+
+    const onCropChange = useCallback<CropFieldHandler>((ev) => {
+        setCropLimits({
+            ...cropLimits,
+            [ev.target?.name]: ev.target?.value,
+        });
+    }, [cropLimits]);
+
+    const resetCropLimits = useCallback(() =>
+        setCropLimits({ left: '', right: '', top: '', bottom: '' }), []);
 
     const onScaleChange = useCallback((_ev: Event, value: number | number[]) => {
         if (typeof value === 'number') setScale(value);
@@ -130,17 +142,17 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
                                 <IconButtonWithTooltip
                                     title='Reset'
                                     icon={<RefreshIcon />}
-                                    onClick={() => { }}
+                                    onClick={resetCropLimits}
                                 />
                             </Stack>
                         </Grid>
 
                         <Grid xs={12}>
                             <Stack direction='row' spacing={1}>
-                                <CropField side='left' />
-                                <CropField side='right' />
-                                <CropField side='top' />
-                                <CropField side='bottom' />
+                                <CropField side='left' value={cropLimits} onChange={onCropChange} />
+                                <CropField side='right' value={cropLimits} onChange={onCropChange} />
+                                <CropField side='top' value={cropLimits} onChange={onCropChange} />
+                                <CropField side='bottom' value={cropLimits} onChange={onCropChange} />
                             </Stack>
                         </Grid>
                     </>
