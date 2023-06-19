@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 
 import { AppMode, AppModeSwitch } from 'components/app-mode-switch';
 
-import { Box, IconButton, InputAdornment, LinearProgress, MenuItem, OutlinedInput, Select, SelectChangeEvent, Tooltip } from '@mui/material';
+import { Box, InputAdornment, LinearProgress, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -10,23 +10,7 @@ import GifBoxIcon from '@mui/icons-material/GifBox';
 import { QuantizationAlgorithm } from 'lib/images/browser/async';
 import { algorithmDisplayName } from 'lib/locale';
 import { NumericFormatCustom } from 'components/numeric-format-custom';
-
-interface ToolBarIconButtonProp {
-    title: string;
-    icon: JSX.Element;
-
-    onClick?: () => void;
-}
-
-function ToolBarIconButton({ title, icon, onClick }: ToolBarIconButtonProp) {
-    return <Tooltip title={title}>
-        <span>
-            <IconButton disabled={!onClick} onClick={onClick}>
-                {icon}
-            </IconButton>
-        </span>
-    </Tooltip>;
-}
+import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 
 interface ToolBarProps {
     setMode?: (mode: AppMode) => void;
@@ -71,7 +55,7 @@ export function ToolBar({
     return <div className="toolbar">
         {setMode && <AppModeSwitch active="batch-quantization" setMode={setMode} />}
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Open/Load Images"
             icon={<FolderOpenIcon />}
             onClick={onLoadImages}
@@ -79,13 +63,13 @@ export function ToolBar({
 
         <div className="separator" />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Export/Save Images"
             icon={<SaveAltIcon />}
             onClick={onSaveImages}
         />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Export/Save Indexed Images"
             icon={<GifBoxIcon />}
             onClick={onSaveIndexedImages}
@@ -130,7 +114,7 @@ export function ToolBar({
             />
         }
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Reperform Quantization"
             icon={<RefreshIcon />}
             onClick={reperformQuantization}

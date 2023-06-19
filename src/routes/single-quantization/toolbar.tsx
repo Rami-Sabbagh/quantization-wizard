@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 
-import { IconButton, InputAdornment, MenuItem, OutlinedInput, Select, Tooltip } from '@mui/material';
+import { InputAdornment, MenuItem, OutlinedInput, Select } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -15,23 +15,7 @@ import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
 import { algorithmDisplayName } from 'lib/locale';
 import { AppMode, AppModeSwitch } from 'components/app-mode-switch';
 import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
-
-interface ToolBarIconButtonProp {
-    title: string;
-    icon: JSX.Element;
-
-    onClick?: () => void;
-}
-
-function ToolBarIconButton({ title, icon, onClick }: ToolBarIconButtonProp) {
-    return <Tooltip title={title}>
-        <span>
-            <IconButton disabled={!onClick} onClick={onClick}>
-                {icon}
-            </IconButton>
-        </span>
-    </Tooltip>;
-}
+import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 
 interface ToolBarProps {
     setMode?: (mode: AppMode) => void;
@@ -95,7 +79,7 @@ export function ToolBar({
     return <div className="toolbar">
         {setMode && <AppModeSwitch active='single-quantization' setMode={setMode} />}
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Open/Load Image"
             icon={<FolderOpenIcon />}
             onClick={openFileDialog}
@@ -103,13 +87,13 @@ export function ToolBar({
 
         <div className="separator" />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Export/Save Image"
             icon={<SaveAltIcon />}
             onClick={onSaveImage}
         />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Export/Save Indexed Image"
             icon={<GifBoxIcon />}
             onClick={onSaveIndexedImage}
@@ -117,13 +101,13 @@ export function ToolBar({
 
         <div className='spacer' />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Show Histogram"
             icon={<BarChartIcon />}
             onClick={showHistogram}
         />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Show Color Palette"
             icon={<PaletteIcon />}
             onClick={showPalette}
@@ -161,7 +145,7 @@ export function ToolBar({
             />
         }
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Reperform Quantization"
             icon={<RefreshIcon />}
             onClick={reperformQuantization}

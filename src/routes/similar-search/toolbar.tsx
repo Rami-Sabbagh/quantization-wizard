@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { IconButton, Tooltip } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import ClearIcon from '@mui/icons-material/Clear';
 import ImageIcon from '@mui/icons-material/Image';
@@ -12,39 +11,25 @@ import TuneIcon from '@mui/icons-material/Tune';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 import { AppMode, AppModeSwitch } from 'components/app-mode-switch';
-
-interface ToolBarIconButtonProp {
-    title: string;
-    icon: JSX.Element;
-
-    onClick?: () => void;
-}
-
-function ToolBarIconButton({ title, icon, onClick }: ToolBarIconButtonProp) {
-    return <Tooltip title={title}>
-        <span>
-            <IconButton disabled={!onClick} onClick={onClick}>
-                {icon}
-            </IconButton>
-        </span>
-    </Tooltip>;
-}
+import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 
 interface ToolBarProps {
     setMode?: (mode: AppMode) => void;
+
+    onOpenTargetImageDialog?: () => void;
 }
 
-export function ToolBar({ setMode }: ToolBarProps) {
+export function ToolBar({ setMode, onOpenTargetImageDialog }: ToolBarProps) {
     return <div className="toolbar">
         {setMode && <AppModeSwitch active="similar-search" setMode={setMode} />}
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Open/Load Source Images"
             icon={<FolderOpenIcon />}
             onClick={() => { }}
         />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Clear Source Images"
             icon={<ClearIcon />}
             onClick={() => { }}
@@ -52,21 +37,21 @@ export function ToolBar({ setMode }: ToolBarProps) {
 
         <div className="separator" />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Open/Load Target Image"
             icon={<ImageIcon />}
-            onClick={() => { }}
+            onClick={onOpenTargetImageDialog}
         />
 
         <div className="separator" />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Export/Save Similar Images"
             icon={<SaveAltIcon />}
             onClick={() => { }}
         />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Show Similar Images Path"
             icon={<PageviewIcon />}
             onClick={() => { }}
@@ -74,13 +59,13 @@ export function ToolBar({ setMode }: ToolBarProps) {
 
         <div className="spacer" />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Search Options"
             icon={<TuneIcon />}
             onClick={() => { }}
         />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Research"
             icon={<RefreshIcon />}
             onClick={() => { }}
