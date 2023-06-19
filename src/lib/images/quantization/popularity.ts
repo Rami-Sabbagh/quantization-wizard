@@ -1,46 +1,52 @@
 import { RGBAImage, QuantizationReport, RGBA } from '../interfaces';
 
 export function popularitySync(image: RGBAImage, numColors: number): QuantizationReport {
-    const colorCounts: Map<number, number> = new Map();
-    const distinctColors: Set<number> = new Set();
-  
-    for (let y = 0; y < image.height; y++) {
+  const colorCounts: Map<number, number> = new Map();
+  const distinctColors: Set<number> = new Set();
+
+  for (let y = 0; y < image.height; y++) {
       for (let x = 0; x < image.width; x++) {
-        const pixel = image.getPixel(x, y);
-        const colorKey = getColorKey(pixel);
-        colorCounts.set(colorKey, (colorCounts.get(colorKey) || 0) + 1);
-        distinctColors.add(colorKey);
+          const pixel = image.getPixel(x, y);
+          const colorKey = getColorKey(pixel);
+          colorCounts.set(colorKey, (colorCounts.get(colorKey) || 0) + 1);
+          distinctColors.add(colorKey);
       }
-    }
-  
-    const palette: RGBA[] = [];
-    const histogram: number[] = [];
-  
-    // Sort distinct colors by count in descending order
-    const sortedColors = Array.from(distinctColors).sort((a, b) => (colorCounts.get(b) || 0) - (colorCounts.get(a) || 0));
-  
-    // Take the top 'numColors' colors or all distinct colors if there are fewer
-    const count = Math.min(sortedColors.length, numColors);
-    for (let i = 0; i < count; i++) {
+  }
+
+  const palette: RGBA[] = [];
+  const histogram: number[] = [];
+
+  // Sort distinct colors by count in descending order
+  const sortedColors = Array.from(distinctColors).sort((a, b) => (colorCounts.get(b) || 0) - (colorCounts.get(a) || 0));
+
+  // Take the top 'numColors' colors or all distinct colors if there are fewer
+  const count = Math.min(sortedColors.length, numColors);
+  for (let i = 0; i < count; i++) {
       const colorKey = sortedColors[i];
       const color = getColorFromKey(colorKey);
       palette.push(color);
       histogram.push(colorCounts.get(colorKey) || 0);
-    }
-  
-    for (let y = 0; y < image.height; y++) {
+  }
+
+  for (let y = 0; y < image.height; y++) {
       for (let x = 0; x < image.width; x++) {
-        const pixel = image.getPixel(x, y);
-        const quantizedPixel = closestColor(pixel, palette);
-        image.setPixel(x, y, quantizedPixel);
+          const pixel = image.getPixel(x, y);
+          const quantizedPixel = closestColor(pixel, palette);
+          image.setPixel(x, y, quantizedPixel);
+
+          // Update histogram
+          const colorKey = getColorKey(quantizedPixel);
+          const index = sortedColors.findIndex(key => key === colorKey);
+          histogram[index]++;
       }
-    }
-  
-    return {
+  }
+
+  return {
       palette,
       histogram,
-    };
-  }
+  };
+}
+
   
   function getColorKey(color: RGBA): number {
     const [r, g, b] = color;

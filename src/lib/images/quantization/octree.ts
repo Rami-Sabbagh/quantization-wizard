@@ -14,6 +14,7 @@ class OctreeNode {
 
 export function octreeSync(image: RGBAImage, count: number): QuantizationReport {
     const octree = new Octree();
+    const histogram: number[] = [];
 
     // Iterate over pixels and add them to Octree
     for (let y = 0; y < image.height; y++) {
@@ -23,23 +24,31 @@ export function octreeSync(image: RGBAImage, count: number): QuantizationReport 
         }
     }
 
-    // Convert Octree to a list of distinct colors
+    // Convert Octree to a list of distinct colors and calculate histogram
     const distinctColors = octree.getDistinctColors(count);
+    for (let i = 0; i < distinctColors.length; i++) {
+        histogram[i] = 0;
+    }
 
-    // Apply distinct colors to the image
+    // Apply distinct colors to the image and update histogram
     for (let y = 0; y < image.height; y++) {
         for (let x = 0; x < image.width; x++) {
             const pixel = image.getPixel(x, y);
             const closestColor = octree.closestColor(pixel, distinctColors);
             image.setPixel(x, y, closestColor[0], closestColor[1], closestColor[2], closestColor[3]);
+
+            // Update histogram
+            const index = distinctColors.findIndex(color => color[0] === closestColor[0] && color[1] === closestColor[1] && color[2] === closestColor[2]);
+            histogram[index]++;
         }
     }
 
     return {
         palette: distinctColors,
-        histogram: [],
+        histogram,
     };
 }
+
 class Octree {
     private root: OctreeNode | null;
 
