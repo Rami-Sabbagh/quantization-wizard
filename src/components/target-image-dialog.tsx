@@ -55,21 +55,22 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
     const [paletteSize, setPaletteSize] = useState('8');
     const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
 
-    const [scale, setScale] = useState(100);
+    const initScale = 40;
+    const [scale, setScale] = useState(initScale);
 
     const onScaleChange = useCallback((_ev: Event, value: number | number[]) => {
         if (typeof value === 'number') setScale(value);
     }, []);
 
-    const resetScale = useCallback(() => setScale(100), []);
+    const resetScale = useCallback(() => setScale(initScale), []);
 
-    return <Dialog maxWidth='lg' fullWidth open={open} onClose={onClose}>
+    return <Dialog maxWidth='md' fullWidth open={open} onClose={onClose}>
         <DialogTitle>Target Image</DialogTitle>
         <DialogContent>
 
             <Grid container spacing={2}>
                 {/* =---: Image Preview  :---= */}
-                <Grid xs={6}>
+                <Grid xs={5}>
                     <div style={{
                         width: '100%',
                         height: '100%',
@@ -80,7 +81,7 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
                 </Grid>
 
                 {/* =---: Options  :---= */}
-                <Grid container xs={6} spacing={1}>
+                <Grid container xs={7} spacing={1}>
                     {/* =---: Quantization Options  :---= */}
                     <>
                         <Grid xs={12}>
