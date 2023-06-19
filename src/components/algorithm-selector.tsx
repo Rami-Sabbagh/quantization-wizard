@@ -7,12 +7,14 @@ import { algorithmDisplayName } from 'lib/locale';
 
 interface AlgorithmSelectorProps {
     algorithm?: QuantizationAlgorithm,
-    setAlgorithm?: (algorithm: QuantizationAlgorithm) => void;
+    setAlgorithm?: (algorithm: QuantizationAlgorithm) => void,
+
+    fullWidth?: boolean,
 }
 
 type AlgorithmChangeHandler = (event: SelectChangeEvent<QuantizationAlgorithm>) => void;
 
-export function AlgorithmSelector({ algorithm, setAlgorithm }: AlgorithmSelectorProps) {
+export function AlgorithmSelector({ algorithm, setAlgorithm, fullWidth }: AlgorithmSelectorProps) {
 
     const onAlgorithmChange = useCallback<AlgorithmChangeHandler>((ev) => {
         if (!setAlgorithm) return;
@@ -23,7 +25,7 @@ export function AlgorithmSelector({ algorithm, setAlgorithm }: AlgorithmSelector
         id="algorithm"
         value={algorithm ?? 'k-means'}
         onChange={onAlgorithmChange}
-        sx={{ width: '18ch', minWidth: '18ch', marginTop: '1px' }}
+        sx={fullWidth ? { width: '100%' } : { width: '18ch', minWidth: '18ch', marginTop: '1px' }}
         margin='none'
         disabled={!setAlgorithm}
     >
