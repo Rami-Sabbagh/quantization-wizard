@@ -6,7 +6,7 @@ import { saveAs } from 'file-saver';
 
 import { loadBlobIntoDataURL, loadImageData, toDataURL } from 'lib/images/browser/loader';
 import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
-import { decodeIndexedBinImage, encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
+import { encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 import { RGBA } from 'lib/images/interfaces';
 
 import { CanvasLayer } from 'components/canvas-layer';
@@ -69,7 +69,7 @@ export function SingleQuantization({ setMode }: SingleQuantizationProps) {
                 setPalette(result.palette);
                 setHistogram(result.histogram);
             }
-        })();
+        })().catch(console.error);
 
         return () => controller.abort();
     }, [algorithm, paletteSize, quantizationToken, sourceImage]);

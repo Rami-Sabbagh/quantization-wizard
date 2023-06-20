@@ -116,7 +116,7 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
             }
 
             setProgress(1);
-        })();
+        })().catch(console.error);
 
         return () => controller.abort();
     }, [sourceImages, quantizationToken, algorithm, paletteSize]);
