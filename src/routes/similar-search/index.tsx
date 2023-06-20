@@ -57,8 +57,7 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
         const controller = new AbortController();
 
         (async () => {
-            const results = await findSimilar(targetImage, sourceImages,
-                undefined, controller.signal);
+            const results = await findSimilar(targetImage, sourceImages, {}, controller.signal);
             if (!results) return;
 
             setResultImages(results.map(index => sourceImages[index]));

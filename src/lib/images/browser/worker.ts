@@ -1,5 +1,5 @@
 import { fromImageData } from "./imagedata";
-import { AsyncTask, AsyncResult, AsyncTaskType, CropTask, DownscaleTask, QuantizationTask } from "./messages";
+import { AsyncTask, AsyncResult, AsyncTaskType } from "./messages";
 
 import { kMeansSync } from "../quantization/k-means";
 import { medianCutSync } from "../quantization/median-cut";
@@ -47,8 +47,8 @@ const downscaleHandler: TaskHandler<'downscale'> = (task) => {
 }
 
 const searchHandler: TaskHandler<'search'> = (task) => {
-    const { target, images, colors } = task
-    return { indexes: findSimilarSync(target, images, colors) };
+    const { target, images, options } = task
+    return { indexes: findSimilarSync(target, images, options) };
 }
 
 onmessage = ({ data: task }: MessageEvent<AsyncTask>) => {

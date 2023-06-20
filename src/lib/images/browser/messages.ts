@@ -1,4 +1,4 @@
-import { IndexedImage, RGBA } from '../interfaces';
+import { IndexedImage, RGBA, SearchOptions } from '../interfaces';
 import { QuantizationAlgorithm } from './async';
 
 export type AsyncTaskType = 'quantization' | 'crop' | 'downscale' | 'search';
@@ -54,7 +54,7 @@ export interface DownscaleResult extends Result<'downscale'> {
 export interface SearchTask extends Task<'search'> {
     target: IndexedImage,
     images: IndexedImage[],
-    colors: number[],
+    options: SearchOptions,
 }
 
 export interface SearchResult extends Result<'search'> {

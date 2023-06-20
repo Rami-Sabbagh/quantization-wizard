@@ -1,4 +1,4 @@
-import { IndexedImage } from '../interfaces';
+import { IndexedImage, SearchOptions } from '../interfaces';
 import { AsyncTask, AsyncResult, AsyncTaskType } from './messages';
 
 export type QuantizationAlgorithm = 'k-means' | 'median-cut' | 'popularity' | 'octree';
@@ -83,11 +83,11 @@ export async function downscale(image: ImageData, width: number, height: number,
     return result?.data ?? null;
 }
 
-export async function findSimilar(target: IndexedImage, images: IndexedImage[], colors: number[] = [], signal?: AbortSignal): Promise<number[] | null> {
+export async function findSimilar(target: IndexedImage, images: IndexedImage[], options: SearchOptions = {}, signal?: AbortSignal): Promise<number[] | null> {
     const result = await executeTask<'search'>({
         id: -1,
         type: 'search',
-        target, images, colors,
+        target, images, options,
     }, signal);
 
     return result?.indexes ?? null;

@@ -24,3 +24,8 @@ export interface IndexedImage {
     palette: RGBA[];
     histogram: number[];
 }
+
+export interface SearchOptions {
+    colors?: number[],
+    threshold?: number,
+}
