@@ -85,22 +85,28 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
             const images: { path: string, image: ImageData }[] = [];
             const dimensions: DimensionsList = [];
 
-            for await (const { path, dataURL } of sourceImages) {
+            for (const { path, dataURL } of sourceImages) {
                 const image = await loadImageData(dataURL);
                 totalPixels += image.width * image.height;
                 images.push({ path, image });
                 dimensions.push({ w: image.width, h: image.height });
             }
 
+            // Avoid changing the state if the operation is aborted.
+            if (controller.signal.aborted) return;
+
             setDimensions(dimensions);
 
             let nextIndex = 0;
-            for await (const { path, image } of images) {
+            for (const { path, image } of images) {
                 const result = await quantize(image, algorithm, size, controller.signal);
                 if (!result) return;
 
                 const indexedBlob = encodeIndexedBinImage(result.data, result);
                 const blob = await toBlob(result.data);
+
+                // Avoid changing the state if the operation is aborted.
+                if (controller.signal.aborted) return;
 
                 results[nextIndex++] = ({ path, dataURL: toDataURL(result.data), blob, indexedBlob });
                 setResultImages([...results]);
