@@ -11,8 +11,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 
 import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 import { AlgorithmSelector } from 'components/algorithm-selector';
-import { PaletteSizeBox } from './palette-size-box';
-import { NumericFormatCustom } from './numeric-format-custom';
+import { PaletteSizeBox } from 'components/palette-size-box';
+import { NumericFormatCustom } from 'components/numeric-format-custom';
 
 import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
 import { QuantizationAlgorithm, crop, downscale, quantize } from 'lib/images/browser/async';
@@ -332,7 +332,7 @@ export function TargetImageDialog({ open, onClose, setTargetImage }: TargetImage
 
             <Button onClick={openFileDialog}>Load Image</Button>
             <div style={{ flex: 'auto' }} />
-            <Button onClick={onClose}>Cancel</Button>
+            <Button color='warning' onClick={onClose}>Cancel</Button>
             <Button onClick={useResult} disabled={!resultImage || !setTargetImage}>Use</Button>
         </DialogActions>
     </Dialog>
