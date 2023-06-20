@@ -1,26 +1,22 @@
-import { QuantizationResult, QuantizationTask } from './messages';
+import { IndexedImage } from '../interfaces';
+import { AsyncTask, AsyncTaskResult } from './messages';
 
 export type QuantizationAlgorithm = 'k-means' | 'median-cut' | 'popularity' | 'octree';
 
 let nextTaskId = 0;
 
-export async function quantize(imageData: ImageData, algorithm: QuantizationAlgorithm, count: number, signal?: AbortSignal): Promise<QuantizationResult | null> {
+async function executeTask<T extends AsyncTask>(task: T, signal?: AbortSignal): Promise<AsyncTaskResult<T> | null> {
     if (signal?.aborted) return null;
 
     const worker = new Worker(new URL('./worker.ts', import.meta.url));
     const taskId = nextTaskId++;
 
-    worker.postMessage({
-        id: taskId,
-        algorithm: algorithm,
-        data: imageData,
-        count,
-    } satisfies QuantizationTask);
+    worker.postMessage({ ...task, id: taskId });
 
-    return new Promise<QuantizationResult | null>((resolve, reject) => {
+    return new Promise<AsyncTaskResult<T> | null>((resolve, reject) => {
         let alive = true;
 
-        worker.onmessage = ({ data: result }: MessageEvent<QuantizationResult>) => {
+        worker.onmessage = ({ data: result }: MessageEvent<AsyncTaskResult<T>>) => {
             if (result.id !== taskId) return;
 
             worker.terminate();
@@ -48,7 +44,24 @@ export async function quantize(imageData: ImageData, algorithm: QuantizationAlgo
     });
 }
 
-export async function kMeans(imageData: ImageData, count: number, signal?: AbortSignal): Promise<QuantizationResult | null> {
+export async function quantize(imageData: ImageData, algorithm: QuantizationAlgorithm, count: number, signal?: AbortSignal): Promise<IndexedImage | null> {
+    if (signal?.aborted) return null;
+
+    const result = await executeTask({
+        id: -1,
+        type: 'quantization',
+        algorithm: algorithm,
+        data: imageData,
+        count,
+    }, signal);
+
+    if (!result) return null;
+
+    const { data, palette, histogram } = result;
+    return { data, palette, histogram } satisfies IndexedImage;
+}
+
+export async function kMeans(imageData: ImageData, count: number, signal?: AbortSignal): Promise<IndexedImage | null> {
     return quantize(imageData, 'k-means', count, signal);
 }
 

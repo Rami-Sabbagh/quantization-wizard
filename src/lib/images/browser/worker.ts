@@ -1,70 +1,40 @@
 import { fromImageData } from "./imagedata";
-import { QuantizationResult, QuantizationTask } from "./messages";
+import { AsyncTask, QuantizationResult } from "./messages";
 
 import { kMeansSync } from "../quantization/k-means";
 import { medianCutSync } from "../quantization/median-cut";
 import { octreeSync } from "../quantization/octree";
 import { popularitySync } from "../quantization/popularity";
 
+import { QuantizationReport } from '../interfaces';
+
 console.log("Worker started!");
 
-onmessage = ({ data: message }: MessageEvent<QuantizationTask>) => {
-  const { id, algorithm, data } = message;
+onmessage = ({ data: message }: MessageEvent<AsyncTask>) => {
+    const { id, type } = message;
 
-  if (algorithm === "k-means") {
-    console.log(
-      `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
-    );
+    if (type === 'quantization') {
+        const { algorithm, data } = message;
 
-    const image = fromImageData(data);
-    const { palette, histogram } = kMeansSync(image, message.count);
+        console.log(
+            `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
+        );
 
-    postMessage({
-      id,
-      data: image.toImageData(),
-      palette,
-      histogram,
-    } satisfies QuantizationResult);
-  } else if (algorithm === "median-cut") {
-    console.log(
-      `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
-    );
-    const image = fromImageData(data);
-    const { palette, histogram } = medianCutSync(image, message.count);
+        const image = fromImageData(data);
+        let report: QuantizationReport;
 
-    postMessage({
-      id,
-      data: image.toImageData(),
-      palette,
-      histogram,
-    } satisfies QuantizationResult);
-  } else if (algorithm === "octree") {
-    console.log(
-      `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
-    );
-    const image = fromImageData(data);
-    const { palette, histogram } = octreeSync(image, message.count);
+        if (algorithm === "k-means") report = kMeansSync(image, message.count);
+        else if (algorithm === "median-cut") report = medianCutSync(image, message.count);
+        else if (algorithm === "octree") report = octreeSync(image, message.count);
+        else if (algorithm === "popularity") report = popularitySync(image, message.count);
+        else throw new Error(`Unsupported algorithm '${algorithm}'.`);
 
-    postMessage({
-      id,
-      data: image.toImageData(),
-      palette,
-      histogram,
-    } satisfies QuantizationResult);
-  } else if (algorithm === "popularity") {
-    console.log(
-      `[Task ${id}]: Started processing an image of dimensions ${data.width}x${data.height}.`
-    );
-    const image = fromImageData(data);
-    const { palette, histogram } = popularitySync(image, message.count);
-
-    postMessage({
-      id,
-      data: image.toImageData(),
-      palette,
-      histogram,
-    } satisfies QuantizationResult);
-  } else {
-    throw new Error(`Unsupported algorithm '${algorithm}'.`);
-  }
+        postMessage({
+            id,
+            type: 'quantization',
+            data: image.toImageData(),
+            palette: report.palette,
+            histogram: report.histogram,
+        } satisfies QuantizationResult);
+    }
 };
