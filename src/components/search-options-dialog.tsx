@@ -5,7 +5,7 @@ import Grid from '@mui/material/Unstable_Grid2/Grid2';
 import SelectAllIcon from '@mui/icons-material/SelectAll';
 import DeselectIcon from '@mui/icons-material/Deselect';
 
-import { IndexedImage, RGBA, SearchOptions } from 'lib/images/interfaces';
+import { IndexedImage, SearchOptions } from 'lib/images/interfaces';
 
 import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 import { ColorMultiSelector, DetailedPaletteColor } from 'components/color-multi-selector';
@@ -25,8 +25,6 @@ interface SearchOptionsDialogProps {
     activeOptions?: SearchOptions,
     setActiveOptions?: (options: SearchOptions) => void,
 }
-
-type RGBAWithIndex = RGBA | { index: number };
 
 export function SearchOptionsDialog({
     open, onClose, targetImage,

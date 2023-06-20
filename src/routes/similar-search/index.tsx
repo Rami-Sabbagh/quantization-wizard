@@ -91,6 +91,11 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
             .catch(console.error);
     }, [sourceImages]);
 
+    const onSetTargetImage = useCallback((target: IndexedImage) => {
+        setTargetImage(target);
+        setSearchOptions({ ...searchOptions, colors: undefined });
+    }, [searchOptions]);
+
     const onClearImages = useCallback(() => setSourceImages([]), []);
     const onClearTargetImage = useCallback(() => setTargetImage(undefined), []);
 
@@ -123,7 +128,7 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
             onOpenOptionsDialog={openSearchOptionsDialog}
             onResearch={targetImage ? research : undefined}
         />
-        <TargetImageDialog setTargetImage={setTargetImage}
+        <TargetImageDialog setTargetImage={onSetTargetImage}
             open={targetImageDialog} onClose={closeTargetImageDialog} />
         <SearchOptionsDialog targetImage={targetImage}
             activeOptions={searchOptions} setActiveOptions={setSearchOptions}
