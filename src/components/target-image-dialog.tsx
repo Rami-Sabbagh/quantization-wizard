@@ -1,10 +1,10 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 
 import './target-image-dialog.scss';
 
 import defaultImage from 'assets/grad_default.png';
 
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography, Stack, InputAdornment, TextField, Slider } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography, Stack, InputAdornment, TextField, Slider, Skeleton } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
 import CompareIcon from '@mui/icons-material/Compare';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -15,7 +15,7 @@ import { PaletteSizeBox } from './palette-size-box';
 import { QuantizationAlgorithm } from 'lib/images/browser/async';
 import { NumericFormatCustom } from './numeric-format-custom';
 import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
-import { loadBlobIntoDataURL } from 'lib/images/browser/loader';
+import { loadBlobIntoDataURL, loadImageData } from 'lib/images/browser/loader';
 import { IndexedImage } from 'lib/images/interfaces';
 
 type CropFieldHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
@@ -65,7 +65,11 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [originalImage, setOriginalImage] = useState<string>(defaultImage);
+    const [sourceImage, setSourceImage] = useState<ImageData | undefined>();
+    const [resultImage, setResultImage] = useState<IndexedImage | undefined>();
+    const [displayImage, setDisplayImage] = useState<string | undefined>();
 
+    const [previewResult, setPreviewResult] = useState(false);
     const [paletteSize, setPaletteSize] = useState('8');
     const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
     const [cropLimits, setCropLimits] = useState({ left: '', right: '', top: '', bottom: '' });
@@ -77,6 +81,33 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
         setCropLimits({ left: '', right: '', top: '', bottom: '' }), []);
 
     const resetScale = useCallback(() => setScale(initScale), []);
+
+    // =---: Image Rendering  :---= //
+
+    // Source-Image
+    useEffect(() => {
+        setSourceImage(undefined);
+
+        const controller = new AbortController();
+
+        (async () => {
+            let image = await loadImageData(originalImage);
+
+            const cropValues: Record<keyof typeof cropLimits, number> =
+                Object.fromEntries(Object.entries(cropLimits).map(([key, value]) =>
+                    [key, value === '' ? 0 : Number.parseInt(value)])) as any;
+
+            if (Object.entries(cropValues).some(([, value]) => value !== 0))
+                console.log(cropValues, cropLimits);
+
+
+
+            // Prevent state changes if aborted.
+            if (controller.signal.aborted) return;
+        })().catch(console.error);
+
+        return () => controller.abort();
+    }, [originalImage, cropLimits, scale]);
 
     // =---: Changes Handlers :---= //
 
@@ -104,6 +135,10 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
         fileInputRef.current?.click();
     }, []);
 
+    const togglePreviewResult = useCallback(() => {
+        setPreviewResult(!previewResult);
+    }, [previewResult]);
+
     // =---:        UI        :---= //
 
     return <Dialog maxWidth='md' fullWidth open={open} onClose={onClose}>
@@ -114,7 +149,8 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
                 {/* =---: Image Preview  :---= */}
                 <Grid xs={5}>
                     <div className='preview-frame'>
-                        {originalImage && <img src={originalImage} alt="Original" />}
+                        {displayImage ? <img src={displayImage} alt="Preview" /> :
+                            <Skeleton variant='rectangular' width={330} height={330} />}
                     </div>
                 </Grid>
 
@@ -129,9 +165,9 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
                                 </Typography>
 
                                 <IconButtonWithTooltip
-                                    title='Toggle Preview'
-                                    icon={<CompareIcon />}
-                                    onClick={() => { }}
+                                    title={`${previewResult ? 'Disable' : 'Enable'} Preview`}
+                                    icon={<CompareIcon color={previewResult ? 'action' : 'disabled'} />}
+                                    onClick={togglePreviewResult}
                                 />
 
                                 <IconButtonWithTooltip
