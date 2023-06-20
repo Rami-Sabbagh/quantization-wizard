@@ -61,6 +61,9 @@ export function SingleQuantization({ setMode }: SingleQuantizationProps) {
                     histogram: result.histogram,
                 });
 
+                // Prevent state changes if aborted.
+                if (controller.signal.aborted) return;
+
                 setResultIndexedImage(indexedImage);
                 setResultImage(toDataURL(result.data));
                 setPalette(result.palette);
