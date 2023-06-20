@@ -21,7 +21,7 @@ export function HistogramDialog({ open, onClose, showPalette, palette, histogram
             <ColorsHistogram palette={palette} histogram={histogram} />
         </DialogContent>
         <DialogActions>
-            <Button onClick={showPalette} disabled={!showPalette}>Show Palette</Button>
+            <Button color="secondary" onClick={showPalette} disabled={!showPalette}>Show Palette</Button>
             <Button onClick={onClose}>Close</Button>
         </DialogActions>
     </Dialog>

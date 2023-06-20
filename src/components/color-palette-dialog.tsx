@@ -25,7 +25,7 @@ export function PaletteDialog({ open, onClose, showHistogram, palette }: Palette
             <ColorSelector palette={palette} selected={selected} onSelect={setSelected} />
         </DialogContent>
         <DialogActions>
-            <Button onClick={showHistogram} disabled={!showHistogram}>Show Histogram</Button>
+            <Button color="secondary" onClick={showHistogram} disabled={!showHistogram}>Show Histogram</Button>
             <Button onClick={onClose}>Close</Button>
         </DialogActions>
     </Dialog>;
