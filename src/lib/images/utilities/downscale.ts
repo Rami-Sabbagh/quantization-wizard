@@ -5,7 +5,7 @@
  * @param width The target width. Must be <= the original width.
  * @param height The target height. Must be <= the original height.
  */
-export function downscale(image: ImageData, width: number, height: number): ImageData {
+export function downscaleSync(image: ImageData, width: number, height: number): ImageData {
     const widthScale = image.width / width, heightScale = image.height / height;
     const result = new ImageData(width, height);
 

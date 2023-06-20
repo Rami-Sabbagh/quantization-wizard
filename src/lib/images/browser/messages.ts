@@ -20,7 +20,14 @@ export interface QuantizationResult {
 export interface CropTask {
     id: number,
     type: 'crop',
+
     data: ImageData,
+
+    minX: number,
+    minY: number,
+
+    maxX: number,
+    maxY: number,
 }
 
 export interface CropResult {

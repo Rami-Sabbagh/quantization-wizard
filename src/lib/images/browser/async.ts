@@ -22,7 +22,8 @@ async function executeTask<T extends AsyncTask>(task: T, signal?: AbortSignal): 
             worker.terminate();
             alive = false;
 
-            resolve(result);
+            if (signal?.aborted) resolve(null);
+            else resolve(result);
         };
 
         worker.onerror = (ev: ErrorEvent) => {
@@ -45,8 +46,6 @@ async function executeTask<T extends AsyncTask>(task: T, signal?: AbortSignal): 
 }
 
 export async function quantize(imageData: ImageData, algorithm: QuantizationAlgorithm, count: number, signal?: AbortSignal): Promise<IndexedImage | null> {
-    if (signal?.aborted) return null;
-
     const result = await executeTask({
         id: -1,
         type: 'quantization',
@@ -61,8 +60,14 @@ export async function quantize(imageData: ImageData, algorithm: QuantizationAlgo
     return { data, palette, histogram } satisfies IndexedImage;
 }
 
-export async function kMeans(imageData: ImageData, count: number, signal?: AbortSignal): Promise<IndexedImage | null> {
-    return quantize(imageData, 'k-means', count, signal);
+export async function crop(image: ImageData, minX: number, minY: number, maxX: number, maxY: number, signal?: AbortSignal): Promise<ImageData | null> {
+    const result = await executeTask({
+        id: -1,
+        type: 'crop',
+        data: image,
+        minX, minY,
+        maxX, maxY,
+    });
+
+    return result?.data ?? null;
 }
-
-

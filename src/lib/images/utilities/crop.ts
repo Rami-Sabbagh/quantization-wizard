@@ -8,7 +8,7 @@
      * @param maxY The Y coordinates of the bottom-right corner.
      */
 
-export function crop(image: ImageData, minX: number, minY: number, maxX: number, maxY: number): ImageData {
+export function cropSync(image: ImageData, minX: number, minY: number, maxX: number, maxY: number): ImageData {
     const width = maxX - minX;
     const height = maxY - minY;
 

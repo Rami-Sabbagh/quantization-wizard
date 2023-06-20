@@ -12,13 +12,13 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 import { AlgorithmSelector } from 'components/algorithm-selector';
 import { PaletteSizeBox } from './palette-size-box';
-import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
 import { NumericFormatCustom } from './numeric-format-custom';
+
 import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
+import { QuantizationAlgorithm, crop, quantize } from 'lib/images/browser/async';
 import { loadBlobIntoDataURL, loadImageData, toDataURL } from 'lib/images/browser/loader';
 import { IndexedImage } from 'lib/images/interfaces';
-import { crop } from 'lib/images/utilities/crop';
-import { downscale } from 'lib/images/utilities/downscale';
+import { downscaleSync } from 'lib/images/utilities/downscale';
 
 type CropFieldHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 type CropSide = 'left' | 'right' | 'top' | 'bottom';
@@ -108,10 +108,13 @@ export function TargetImageDialog({ open, onClose, setTargetImage }: TargetImage
                 const minY = Math.min(top, image.height - 2);
                 const maxY = Math.max(minY + 1, image.height - bottom);
 
-                image = crop(image, minX, minY, maxX, maxY);
+                const result = await crop(image, minX, minY, maxX, maxY, controller.signal);
+                if (!result) return;
+
+                image = result;
             }
 
-            if (scale !== 100) image = downscale(image,
+            if (scale !== 100) image = downscaleSync(image,
                 Math.max(Math.floor(image.width * scale / 100), 1),
                 Math.max(Math.floor(image.height * scale / 100), 1),
             )
