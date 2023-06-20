@@ -8,6 +8,6 @@ import { IndexedImage } from '../interfaces';
  * @param images The images to search in.
  * @returns A list of the similar images.
  */
-export function similarSearch(target: IndexedImage, selectedColors: number[], images: IndexedImage[]): IndexedImage[] {
+export function findSimilarSync(target: IndexedImage, selectedColors: number[], images: IndexedImage[]): IndexedImage[] {
     throw new Error('Not implemented !');
 }
