@@ -15,9 +15,7 @@ type ColorMultiSelectorProps = {
 };
 
 export function ColorMultiSelector({ palette, selected, setSelected }: ColorMultiSelectorProps) {
-    const size = palette.length;
-
-    const columns = Math.min(Math.max(size, 8), size > 32 ? 16 : 8);
+    const columns = 16;
     const rows = Math.max(Math.ceil(palette.length / columns), 1);
 
     const toggleSelection = useCallback<React.MouseEventHandler<HTMLSpanElement>>((ev) => {
