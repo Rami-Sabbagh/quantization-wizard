@@ -57,17 +57,15 @@ function updateCentroids(image: RGBAImage, cubes: RGBACube[], histogram: number[
     let bSum = 0;
     let count = 0;
 
-    for (let y = cube.rMin; y <= cube.rMax; y++) {
-      for (let x = cube.gMin; x <= cube.gMax; x++) {
-        for (let z = cube.bMin; z <= cube.bMax; z++) {
-          const clusterIndex = y * image.width * image.width + x * image.width + z;
-          if (clusters[clusterIndex] !== i) continue;
-          image.getPixel(x, y, pixel);
-          rSum += pixel[0];
-          gSum += pixel[1];
-          bSum += pixel[2];
-          count++;
-        }
+    for (let y = 0; y < image.height; y++) {
+      for (let x = 0; x < image.width; x++) {
+        const clusterIndex = y * image.width + x;
+        if (clusters[clusterIndex] !== i) continue;
+        image.getPixel(x, y, pixel);
+        rSum += pixel[0];
+        gSum += pixel[1];
+        bSum += pixel[2];
+        count++;
       }
     }
 
@@ -95,8 +93,7 @@ function distance(c1: RGBA, c2: RGBA): number {
   return Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
 }
 
-
-export function medianCutSync(image: RGBAImage, count: number): QuantizationReport {
+export function medianCutSync(image: RGBAImage, numColors: number): QuantizationReport {
   const cubes: RGBACube[] = [];
   const histogram: number[] = [];
   const clusters: number[] = [];
@@ -110,7 +107,7 @@ export function medianCutSync(image: RGBAImage, count: number): QuantizationRepo
 
   let iterations = 0;
 
-  while (cubes.length < count) {
+  while (cubes.length < numColors) {
     let largestCubeIndex = 0;
     let largestCubeSize = 0;
 
@@ -152,7 +149,7 @@ export function medianCutSync(image: RGBAImage, count: number): QuantizationRepo
     iterations++;
   }
 
-  console.info(`Took ${iterations} iterations to quantize with ${count} colors.`);
+  console.info(`Took ${iterations} iterations to quantize with ${numColors} colors.`);
 
   applyClusters(image, cubes, clusters);
 
