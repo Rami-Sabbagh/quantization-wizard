@@ -4,8 +4,9 @@ import { ToolBar } from './toolbar';
 
 import { AppMode } from 'components/app-mode-switch';
 import { TargetImageDialog } from 'components/target-image-dialog';
+import { SearchOptionsDialog } from 'components/search-options-dialog';
 
-import { IndexedImage } from 'lib/images/interfaces';
+import { IndexedImage, SearchOptions } from 'lib/images/interfaces';
 import { FilesHandlesList, findAllFiles } from 'lib/fs-utils';
 import { decodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 import { toDataURL } from 'lib/images/browser/loader';
@@ -42,8 +43,10 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
     const [resultImages, setResultImages] = useState<SourceImage[]>([]);
 
     const [targetImage, setTargetImage] = useState<IndexedImage | undefined>();
+    const [searchOptions, setSearchOptions] = useState<SearchOptions>({});
 
     const [targetImageDialog, setTargetImageDialog] = useState(false);
+    const [searchOptionsDialog, setSearchOptionsDialog] = useState(true);
 
     const [canvasToken, setCanvasToken] = useState(Date.now());
     const [searchToken, setSearchToken] = useState(Date.now());
@@ -57,7 +60,7 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
         const controller = new AbortController();
 
         (async () => {
-            const results = await findSimilar(targetImage, sourceImages, {}, controller.signal);
+            const results = await findSimilar(targetImage, sourceImages, searchOptions, controller.signal);
             if (!results) return;
 
             setResultImages(results.map(index => sourceImages[index]));
@@ -65,7 +68,7 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
         })().catch(console.error);
 
         return () => controller.abort();
-    }, [sourceImages, targetImage, searchToken]);
+    }, [sourceImages, targetImage, searchOptions, searchToken]);
 
     /* =---: Actions :---= */
 
@@ -94,7 +97,12 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
     const openTargetImageDialog = useCallback(() => setTargetImageDialog(true), []);
     const closeTargetImageDialog = useCallback(() => setTargetImageDialog(false), []);
 
+    const openSearchOptionsDialog = useCallback(() => setSearchOptionsDialog(true), []);
+    const closeSearchOptionsDialog = useCallback(() => setSearchOptionsDialog(false), []);
+
     const research = useCallback(() => setSearchToken(Date.now()), []);
+
+    /* =---:  View   :---= */
 
     return <>
         <CanvasLayer resetToken={targetImage && resultImages.length === 0 ? undefined : canvasToken}>
@@ -112,9 +120,13 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
             onOpenTargetImageDialog={openTargetImageDialog}
             onClearTargetImage={targetImage ? onClearTargetImage : undefined}
 
+            onOpenOptionsDialog={openSearchOptionsDialog}
             onResearch={targetImage ? research : undefined}
         />
         <TargetImageDialog setTargetImage={setTargetImage}
             open={targetImageDialog} onClose={closeTargetImageDialog} />
+        <SearchOptionsDialog
+            activeOptions={searchOptions} setActiveOptions={setSearchOptions}
+            open={searchOptionsDialog} onClose={closeSearchOptionsDialog} />
     </>;
 }
