@@ -59,11 +59,13 @@ const scaleMarks = [
 interface TargetImageDialogProps {
     open: boolean;
     onClose: () => void;
+
+    setTargetImage?: (image: IndexedImage) => void;
 }
 
 type FileEventHandler = React.ChangeEventHandler<HTMLInputElement>;
 
-export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
+export function TargetImageDialog({ open, onClose, setTargetImage }: TargetImageDialogProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [originalImage, setOriginalImage] = useState<string>(defaultImage);
@@ -189,6 +191,12 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
     const reperformQuantization = useCallback(() => {
         setQuantizationToken(Date.now());
     }, []);
+
+    const useResult = useCallback(() => {
+        if (!setTargetImage || !resultImage) return;
+        setTargetImage(resultImage);
+        onClose();
+    }, [resultImage, setTargetImage, onClose]);
 
     // =---:        UI        :---= //
 
@@ -318,7 +326,7 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
             <Button onClick={openFileDialog}>Load Image</Button>
             <div style={{ flex: 'auto' }} />
             <Button onClick={onClose}>Cancel</Button>
-            <Button disabled={!resultImage}>Use</Button>
+            <Button onClick={useResult} disabled={!resultImage || !setTargetImage}>Use</Button>
         </DialogActions>
     </Dialog>
 }
