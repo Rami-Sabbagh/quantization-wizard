@@ -8,6 +8,8 @@ import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
 import { loadBlobIntoDataURL, loadImageData, toBlob, toDataURL } from 'lib/images/browser/loader';
 import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
 import { encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
+import { FilesHandlesList, findAllFiles } from 'lib/fs-utils';
+
 import { CanvasLayer } from 'components/canvas-layer';
 import { CompareFrame } from 'components/compare-frame';
 
@@ -15,16 +17,7 @@ interface BatchQuantizationProps {
     setMode?: (mode: AppMode) => void;
 }
 
-type FilesHandlesList = { path: string, handle: FileSystemFileHandle }[];
 
-async function findAllFiles(directory: FileSystemDirectoryHandle, handlesList: FilesHandlesList = [], basePath = ''): Promise<FilesHandlesList> {
-    for await (const [name, handle] of directory.entries()) {
-        if (handle.kind === 'file') handlesList.push({ path: `${basePath}${name}`, handle });
-        else if (handle.kind === 'directory') await findAllFiles(handle, handlesList, `${basePath}${name}/`);
-    }
-
-    return handlesList;
-}
 
 type SourceImagesList = { path: string, dataURL: string }[];
 type ResultImagesList = ({ path: string, dataURL: string, blob: Blob, indexedBlob: Blob } | null)[];
