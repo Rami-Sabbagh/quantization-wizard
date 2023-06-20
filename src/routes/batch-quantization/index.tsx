@@ -85,7 +85,7 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
             const images: { path: string, image: ImageData }[] = [];
             const dimensions: DimensionsList = [];
 
-            for (const { path, dataURL } of sourceImages) {
+            for await (const { path, dataURL } of sourceImages) {
                 const image = await loadImageData(dataURL);
                 totalPixels += image.width * image.height;
                 images.push({ path, image });
@@ -95,7 +95,7 @@ export function BatchQuantization({ setMode }: BatchQuantizationProps) {
             setDimensions(dimensions);
 
             let nextIndex = 0;
-            for (const { path, image } of images) {
+            for await (const { path, image } of images) {
                 const result = await quantize(image, algorithm, size, controller.signal);
                 if (!result) return;
 
