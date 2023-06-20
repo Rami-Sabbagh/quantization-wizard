@@ -7,6 +7,8 @@ interface RGBACube {
   gMax: number;
   bMin: number;
   bMax: number;
+  aMin: number;
+  aMax: number;
 }
 
 function updateClusters(image: RGBAImage, cubes: RGBACube[], clusters: number[]): boolean {
@@ -55,6 +57,7 @@ function updateCentroids(image: RGBAImage, cubes: RGBACube[], histogram: number[
     let rSum = 0;
     let gSum = 0;
     let bSum = 0;
+    let aSum = 0;
     let count = 0;
 
     for (let y = 0; y < image.height; y++) {
@@ -65,6 +68,7 @@ function updateCentroids(image: RGBAImage, cubes: RGBACube[], histogram: number[
         rSum += pixel[0];
         gSum += pixel[1];
         bSum += pixel[2];
+        aSum += pixel[3];
         count++;
       }
     }
@@ -76,6 +80,7 @@ function updateCentroids(image: RGBAImage, cubes: RGBACube[], histogram: number[
     centroid[0] = Math.floor(rSum / count);
     centroid[1] = Math.floor(gSum / count);
     centroid[2] = Math.floor(bSum / count);
+    centroid[3] = Math.floor(aSum / count);
   }
 }
 
@@ -83,14 +88,15 @@ function getCentroid(cube: RGBACube): RGBA {
   const r = Math.floor((cube.rMin + cube.rMax) / 2);
   const g = Math.floor((cube.gMin + cube.gMax) / 2);
   const b = Math.floor((cube.bMin + cube.bMax) / 2);
-  return [r, g, b, 255];
+  const a = Math.floor((cube.aMin + cube.aMax) / 2);
+  return [r, g, b, a];
 }
 
 function distance(c1: RGBA, c2: RGBA): number {
-  const [r1, g1, b1] = c1;
-  const [r2, g2, b2] = c2;
+  const [r1, g1, b1, a1] = c1;
+  const [r2, g2, b2, a2] = c2;
 
-  return Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
+  return Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2) + Math.abs(a1 - a2);
 }
 
 export function medianCutSync(image: RGBAImage, numColors: number): QuantizationReport {
@@ -98,7 +104,7 @@ export function medianCutSync(image: RGBAImage, numColors: number): Quantization
   const histogram: number[] = [];
   const clusters: number[] = [];
 
-  cubes.push({ rMin: 0, rMax: 255, gMin: 0, gMax: 255, bMin: 0, bMax: 255 });
+  cubes.push({ rMin: 0, rMax: 255, gMin: 0, gMax: 255, bMin: 0, bMax: 255 , aMin : 0, aMax:255});
   histogram.push(0);
 
   for (let i = 0; i < image.width * image.height; i++) {
@@ -125,18 +131,18 @@ export function medianCutSync(image: RGBAImage, numColors: number): Quantization
 
     if (largestCube.rMax - largestCube.rMin >= largestCube.gMax - largestCube.gMin && largestCube.rMax - largestCube.rMin >= largestCube.bMax - largestCube.bMin) {
       const mid = Math.floor((largestCube.rMax + largestCube.rMin) / 2);
-      const cube1 = { rMin: largestCube.rMin, rMax: mid, gMin: largestCube.gMin, gMax: largestCube.gMax, bMin: largestCube.bMin, bMax: largestCube.bMax };
-      const cube2 = { rMin: mid + 1, rMax: largestCube.rMax, gMin: largestCube.gMin, gMax: largestCube.gMax, bMin: largestCube.bMin, bMax: largestCube.bMax };
+      const cube1 = { rMin: largestCube.rMin, rMax: mid, gMin: largestCube.gMin, gMax: largestCube.gMax, bMin: largestCube.bMin, bMax: largestCube.bMax , aMin: largestCube.aMin, aMax: largestCube.aMax };
+      const cube2 = { rMin: mid + 1, rMax: largestCube.rMax, gMin: largestCube.gMin, gMax: largestCube.gMax, bMin: largestCube.bMin, bMax: largestCube.bMax , aMin: largestCube.aMin, aMax: largestCube.aMax };
       cubes.splice(largestCubeIndex, 1, cube1, cube2);
     } else if (largestCube.gMax - largestCube.gMin >= largestCube.bMax - largestCube.bMin) {
       const mid = Math.floor((largestCube.gMax + largestCube.gMin) / 2);
-      const cube1 = { rMin: largestCube.rMin, rMax: largestCube.rMax, gMin: largestCube.gMin, gMax: mid, bMin: largestCube.bMin, bMax: largestCube.bMax };
-      const cube2 = { rMin: largestCube.rMin, rMax: largestCube.rMax, gMin: mid + 1, gMax: largestCube.gMax, bMin: largestCube.bMin, bMax: largestCube.bMax };
+      const cube1 = { rMin: largestCube.rMin, rMax: largestCube.rMax, gMin: largestCube.gMin, gMax: mid, bMin: largestCube.bMin, bMax: largestCube.bMax , aMin: largestCube.aMin, aMax: largestCube.aMax};
+      const cube2 = { rMin: largestCube.rMin, rMax: largestCube.rMax, gMin: mid + 1, gMax: largestCube.gMax, bMin: largestCube.bMin, bMax: largestCube.bMax , aMin: largestCube.aMin, aMax: largestCube.aMax};
       cubes.splice(largestCubeIndex, 1, cube1, cube2);
     } else {
       const mid = Math.floor((largestCube.bMax + largestCube.bMin) / 2);
-      const cube1 = { rMin: largestCube.rMin, rMax: largestCube.rMax, gMin: largestCube.gMin, gMax: largestCube.gMax, bMin: largestCube.bMin, bMax: mid };
-      const cube2 = { rMin: largestCube.rMin, rMax: largestCube.rMax, gMin: largestCube.gMin, gMax: largestCube.gMax, bMin: mid + 1, bMax: largestCube.bMax };
+      const cube1 = { rMin: largestCube.rMin, rMax: largestCube.rMax, gMin: largestCube.gMin, gMax: largestCube.gMax, bMin: largestCube.bMin, bMax: mid , aMin: largestCube.aMin, aMax: largestCube.aMax};
+      const cube2 = { rMin: largestCube.rMin, rMax: largestCube.rMax, gMin: largestCube.gMin, gMax: largestCube.gMax, bMin: mid + 1, bMax: largestCube.bMax , aMin: largestCube.aMin, aMax: largestCube.aMax};
       cubes.splice(largestCubeIndex, 1, cube1, cube2);
     }
 
