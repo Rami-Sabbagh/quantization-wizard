@@ -6,7 +6,7 @@ class OctreeNode {
     children: OctreeNode[];
 
     constructor() {
-        this.colorSum = [0, 0, 0];
+        this.colorSum = [0, 0, 0, 0];
         this.colorCount = 0;
         this.children = [];
     }
@@ -20,7 +20,7 @@ export function octreeSync(image: RGBAImage, count: number): QuantizationReport 
     for (let y = 0; y < image.height; y++) {
         for (let x = 0; x < image.width; x++) {
             const pixel = image.getPixel(x, y);
-            octree.addColor(pixel[0], pixel[1], pixel[2]);
+            octree.addColor(pixel[0], pixel[1], pixel[2], pixel[3]);
         }
     }
 
@@ -38,7 +38,12 @@ export function octreeSync(image: RGBAImage, count: number): QuantizationReport 
             image.setPixel(x, y, closestColor[0], closestColor[1], closestColor[2], closestColor[3]);
 
             // Update histogram
-            const index = distinctColors.findIndex(color => color[0] === closestColor[0] && color[1] === closestColor[1] && color[2] === closestColor[2]);
+            const index = distinctColors.findIndex(color =>
+                color[0] === closestColor[0]
+                && color[1] === closestColor[1]
+                && color[2] === closestColor[2]
+                && color[3] === closestColor[3]
+            );
             histogram[index]++;
         }
     }
@@ -56,31 +61,32 @@ class Octree {
         this.root = null;
     }
 
-    public addColor(red: number, green: number, blue: number): void {
+    public addColor(red: number, green: number, blue: number, alpha: number): void {
         if (!this.root) {
             this.root = new OctreeNode();
         }
-        this.addColorRecursive(this.root, red, green, blue, 0);
+        this.addColorRecursive(this.root, red, green, blue, alpha, 0);
     }
 
-    private addColorRecursive(node: OctreeNode, red: number, green: number, blue: number, level: number): void {
+    private addColorRecursive(node: OctreeNode, red: number, green: number, blue: number, alpha: number, level: number): void {
         if (level === 8) {
             node.colorSum[0] += red;
             node.colorSum[1] += green;
             node.colorSum[2] += blue;
+            node.colorSum[3] += alpha;
             node.colorCount++;
             return;
         }
 
-        const index = this.getColorIndex(red, green, blue, level);
+        const index = this.getColorIndex(red, green, blue, alpha, level);
         if (!node.children[index]) {
             node.children[index] = new OctreeNode();
         }
 
-        this.addColorRecursive(node.children[index], red, green, blue, level + 1);
+        this.addColorRecursive(node.children[index], red, green, blue, alpha, level + 1);
     }
 
-    private getColorIndex(red: number, green: number, blue: number, level: number): number {
+    private getColorIndex(red: number, green: number, blue: number, alpha: number, level: number): number {
         let index = 0;
         if ((red & (1 << level)) !== 0) {
             index |= 1;
@@ -90,6 +96,9 @@ class Octree {
         }
         if ((blue & (1 << level)) !== 0) {
             index |= 4;
+        }
+        if ((alpha & (1 << level)) !== 0) {
+            index |= 8;
         }
         return index;
     }
@@ -109,7 +118,8 @@ class Octree {
             const red = Math.floor(node.colorSum[0] / node.colorCount);
             const green = Math.floor(node.colorSum[1] / node.colorCount);
             const blue = Math.floor(node.colorSum[2] / node.colorCount);
-            distinctColors.push([red, green, blue, 255]);
+            const alpha = Math.floor(node.colorSum[3] / node.colorCount);
+            distinctColors.push([red, green, blue, alpha]);
         }
 
         for (const child of node.children) {
@@ -137,6 +147,7 @@ class Octree {
         const redDiff = color1[0] - color2[0];
         const greenDiff = color1[1] - color2[1];
         const blueDiff = color1[2] - color2[2];
-        return redDiff * redDiff + greenDiff * greenDiff + blueDiff * blueDiff;
+        const alphaDiff = color1[3] - color2[3];
+        return redDiff * redDiff + greenDiff * greenDiff + blueDiff * blueDiff + alphaDiff * alphaDiff;
     }
 }
