@@ -36,9 +36,26 @@ export interface CropResult {
     data: ImageData
 }
 
-export type AsyncTask = QuantizationTask | CropTask;
+export interface DownscaleTask {
+    id: number,
+    type: 'downscale',
 
-export type AsyncTaskResult<T> =
+    data: ImageData,
+
+    width: number,
+    height: number,
+}
+
+export interface DownscaleResult {
+    id: number,
+    type: 'downscale',
+    data: ImageData,
+}
+
+export type AsyncTask = QuantizationTask | CropTask | DownscaleTask;
+
+export type AsyncTaskResult<T extends AsyncTask> =
     T extends QuantizationTask ? QuantizationResult :
     T extends CropTask ? CropResult :
+    T extends DownscaleTask ? DownscaleResult :
     unknown;

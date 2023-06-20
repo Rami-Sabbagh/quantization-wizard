@@ -67,7 +67,18 @@ export async function crop(image: ImageData, minX: number, minY: number, maxX: n
         data: image,
         minX, minY,
         maxX, maxY,
-    });
+    }, signal);
+
+    return result?.data ?? null;
+}
+
+export async function downscale(image: ImageData, width: number, height: number, signal?: AbortSignal): Promise<ImageData | null> {
+    const result = await executeTask({
+        id: -1,
+        type: 'downscale',
+        data: image,
+        width, height,
+    }, signal);
 
     return result?.data ?? null;
 }

@@ -1,5 +1,5 @@
 import { fromImageData } from "./imagedata";
-import { AsyncTask, AsyncTaskResult, CropTask, QuantizationTask } from "./messages";
+import { AsyncTask, AsyncTaskResult, CropTask, DownscaleTask, QuantizationTask } from "./messages";
 
 import { kMeansSync } from "../quantization/k-means";
 import { medianCutSync } from "../quantization/median-cut";
@@ -8,8 +8,7 @@ import { popularitySync } from "../quantization/popularity";
 
 import { QuantizationReport } from '../interfaces';
 import { cropSync } from '../utilities/crop';
-
-console.log("Worker started!");
+import { downscaleSync } from '../utilities/downscale';
 
 type TaskHandler<T extends AsyncTask> = (task: T) => Omit<AsyncTaskResult<T>, 'id' | 'type'>;
 
@@ -34,11 +33,17 @@ const quantizationHandler: TaskHandler<QuantizationTask> = (task) => {
         palette: report.palette,
         histogram: report.histogram,
     };
-}
+};
 
 const cropHandler: TaskHandler<CropTask> = (task) => {
     const { data, minX, minY, maxX, maxY } = task;
     return { data: cropSync(data, minX, minY, maxX, maxY) };
+};
+
+const downscaleHandler: TaskHandler<DownscaleTask> = (task) => {
+    const { data, width, height } = task;
+    return { data: downscaleSync(data, width, height) };
+    ;
 }
 
 onmessage = ({ data: task }: MessageEvent<AsyncTask>) => {
@@ -46,4 +51,5 @@ onmessage = ({ data: task }: MessageEvent<AsyncTask>) => {
 
     if (type === 'quantization') postMessage({ id, type, ...quantizationHandler(task) });
     if (type === 'crop') postMessage({ id, type, ...cropHandler(task) });
+    if (type === 'downscale') postMessage({ id, type, ...downscaleHandler(task) });
 };
