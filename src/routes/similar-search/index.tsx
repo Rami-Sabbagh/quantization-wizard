@@ -125,7 +125,7 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
         />
         <TargetImageDialog setTargetImage={setTargetImage}
             open={targetImageDialog} onClose={closeTargetImageDialog} />
-        <SearchOptionsDialog
+        <SearchOptionsDialog targetImage={targetImage}
             activeOptions={searchOptions} setActiveOptions={setSearchOptions}
             open={searchOptionsDialog} onClose={closeSearchOptionsDialog} />
     </>;
