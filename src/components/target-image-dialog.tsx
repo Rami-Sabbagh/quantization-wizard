@@ -1,4 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
+
+import './target-image-dialog.scss';
+
+import defaultImage from 'assets/grad_default.png';
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography, Stack, InputAdornment, TextField, Slider } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
@@ -10,6 +14,9 @@ import { AlgorithmSelector } from 'components/algorithm-selector';
 import { PaletteSizeBox } from './palette-size-box';
 import { QuantizationAlgorithm } from 'lib/images/browser/async';
 import { NumericFormatCustom } from './numeric-format-custom';
+import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
+import { loadBlobIntoDataURL } from 'lib/images/browser/loader';
+import { IndexedImage } from 'lib/images/interfaces';
 
 type CropFieldHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 type CropSide = 'left' | 'right' | 'top' | 'bottom';
@@ -52,13 +59,26 @@ interface TargetImageDialogProps {
     onClose: () => void;
 }
 
+type FileEventHandler = React.ChangeEventHandler<HTMLInputElement>;
+
 export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [originalImage, setOriginalImage] = useState<string>(defaultImage);
+
     const [paletteSize, setPaletteSize] = useState('8');
     const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
     const [cropLimits, setCropLimits] = useState({ left: '', right: '', top: '', bottom: '' });
 
     const initScale = 40;
     const [scale, setScale] = useState(initScale);
+
+    const resetCropLimits = useCallback(() =>
+        setCropLimits({ left: '', right: '', top: '', bottom: '' }), []);
+
+    const resetScale = useCallback(() => setScale(initScale), []);
+
+    // =---: Changes Handlers :---= //
 
     const onCropChange = useCallback<CropFieldHandler>((ev) => {
         setCropLimits({
@@ -67,14 +87,24 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
         });
     }, [cropLimits]);
 
-    const resetCropLimits = useCallback(() =>
-        setCropLimits({ left: '', right: '', top: '', bottom: '' }), []);
-
     const onScaleChange = useCallback((_ev: Event, value: number | number[]) => {
         if (typeof value === 'number') setScale(value);
     }, []);
 
-    const resetScale = useCallback(() => setScale(initScale), []);
+    const onFileInputChange = useCallback<FileEventHandler>((event) => {
+        if (!event.target.files || event.target.files.length === 0) return;
+        loadBlobIntoDataURL(event.target.files[0])
+            .then(setOriginalImage)
+            .catch(console.error);
+    }, []);
+
+    // =---:     Actions      :---= //
+
+    const openFileDialog = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
+
+    // =---:        UI        :---= //
 
     return <Dialog maxWidth='md' fullWidth open={open} onClose={onClose}>
         <DialogTitle>Target Image</DialogTitle>
@@ -83,13 +113,9 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
             <Grid container spacing={2}>
                 {/* =---: Image Preview  :---= */}
                 <Grid xs={5}>
-                    <div style={{
-                        width: '100%',
-                        height: '100%',
-                        minHeight: '100px',
-                        background: '#222',
-                        borderRadius: 5,
-                    }} />
+                    <div className='preview-frame'>
+                        {originalImage && <img src={originalImage} alt="Original" />}
+                    </div>
                 </Grid>
 
                 {/* =---: Options  :---= */}
@@ -193,7 +219,15 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
 
         </DialogContent>
         <DialogActions>
-            <Button>Load Image</Button>
+            <input
+                type='file'
+                ref={fileInputRef}
+                onChange={onFileInputChange}
+                style={{ display: 'none' }}
+                accept={ACCEPTED_IMAGE_TYPES.join(', ')}
+            />
+
+            <Button onClick={openFileDialog}>Load Image</Button>
             <div style={{ flex: 'auto' }} />
             <Button onClick={onClose}>Cancel</Button>
             <Button>Use</Button>
