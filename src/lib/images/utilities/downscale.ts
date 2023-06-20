@@ -6,33 +6,20 @@
  * @param height The target height. Must be <= the original height.
  */
 export function downscale(image: ImageData, width: number, height: number): ImageData {
-    if (width > image.width || height > image.height)
-        throw new Error('Target dimensions must be <= original dimensions.');
+    const widthScale = image.width / width, heightScale = image.height / height;
+    const result = new ImageData(width, height);
 
-    // Create an in-memory canvas and context
-    const canvas = document.createElement('canvas');
+    const srcData = new Uint32Array(image.data.buffer);
+    const dstData = new Uint32Array(result.data.buffer);
 
-    canvas.width = image.width;
-    canvas.height = image.height;
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const srcIndex = Math.floor(y * heightScale) * image.width + Math.floor(x * widthScale);
+            const dstIndex = y * width + x;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-        throw new Error('Could not create canvas context.');
+            dstData[dstIndex] = srcData[srcIndex];
+        }
     }
 
-    // Draw the original image onto the canvas
-    ctx.putImageData(image, 0, 0);
-
-    // Create a new canvas with the target dimensions and draw the original canvas onto it
-    const scaledCanvas = document.createElement('canvas');
-    scaledCanvas.width = width;
-    scaledCanvas.height = height;
-    const scaledCtx = scaledCanvas.getContext('2d');
-    if (!scaledCtx) throw new Error('Could not create scaled canvas context.');
-
-    scaledCtx.imageSmoothingEnabled = false;
-    scaledCtx.drawImage(canvas, 0, 0, image.width, image.height, 0, 0, width, height);
-
-    // Return the pixel data of the scaled image
-    return scaledCtx.getImageData(0, 0, width, height);
+    return result;
 }
