@@ -71,12 +71,12 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
     const [resultImage, setResultImage] = useState<IndexedImage | undefined>();
     const [displayImage, setDisplayImage] = useState<string | undefined>();
 
-    const [previewResult, setPreviewResult] = useState(false);
-    const [paletteSize, setPaletteSize] = useState('8');
+    const [previewResult, setPreviewResult] = useState(true);
+    const [paletteSize, setPaletteSize] = useState('16');
     const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
     const [quantizationToken, setQuantizationToken] = useState(Date.now());
 
-    const initScale = 100; // FIXME: change to 40
+    const initScale = 40;
     const [scale, setScale] = useState(initScale);
     const [cropLimits, setCropLimits] = useState({ left: '', right: '', top: '', bottom: '' });
 
