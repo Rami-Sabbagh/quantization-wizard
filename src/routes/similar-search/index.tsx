@@ -45,6 +45,7 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
     const [targetImageDialog, setTargetImageDialog] = useState(false);
 
     const [canvasToken, setCanvasToken] = useState(Date.now());
+    const [searchToken, setSearchToken] = useState(Date.now());
 
     /* =---: Search  :---= */
 
@@ -52,7 +53,7 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
         setResultImages([]);
         if (!targetImage) return;
 
-    }, [sourceImages, targetImage]);
+    }, [sourceImages, targetImage, searchToken]);
 
     /* =---: Actions :---= */
 
@@ -81,6 +82,8 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
     const openTargetImageDialog = useCallback(() => setTargetImageDialog(true), []);
     const closeTargetImageDialog = useCallback(() => setTargetImageDialog(false), []);
 
+    const research = useCallback(() => setSearchToken(Date.now()), []);
+
     return <>
         <CanvasLayer resetToken={canvasToken}>
             {(targetImage ? resultImages : sourceImages).map(({ data, dataURL, path }) => <img
@@ -96,6 +99,8 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
 
             onOpenTargetImageDialog={openTargetImageDialog}
             onClearTargetImage={targetImage ? onClearTargetImage : undefined}
+
+            onResearch={targetImage ? research : undefined}
         />
         <TargetImageDialog setTargetImage={setTargetImage}
             open={targetImageDialog} onClose={closeTargetImageDialog} />
