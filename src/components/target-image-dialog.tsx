@@ -112,8 +112,8 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
             }
 
             if (scale !== 100) image = downscale(image,
-                Math.floor(image.width * scale / 100),
-                Math.floor(image.height * scale / 100),
+                Math.max(Math.floor(image.width * scale / 100), 1),
+                Math.max(Math.floor(image.height * scale / 100), 1),
             )
 
             // Prevent state changes if aborted.
