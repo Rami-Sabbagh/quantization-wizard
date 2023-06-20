@@ -16,13 +16,15 @@ interface ToolBarProps {
 
     onLoadImages?: () => void;
     onClearImages?: () => void;
+
     onOpenTargetImageDialog?: () => void;
+    onClearTargetImage?: () => void;
 }
 
 export function ToolBar({
     setMode,
     onLoadImages, onClearImages,
-    onOpenTargetImageDialog,
+    onOpenTargetImageDialog, onClearTargetImage,
 }: ToolBarProps) {
 
     return <div className="toolbar">
@@ -46,6 +48,12 @@ export function ToolBar({
             title="Open/Load Target Image"
             icon={<ImageIcon />}
             onClick={onOpenTargetImageDialog}
+        />
+
+        <IconButtonWithTooltip
+            title="Clear Target Image"
+            icon={<ClearIcon />}
+            onClick={onClearTargetImage}
         />
 
         <div className="separator" />

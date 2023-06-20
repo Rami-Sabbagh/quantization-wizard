@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 import { ToolBar } from './toolbar';
 
@@ -38,11 +38,21 @@ interface SimilarSearchProps {
 
 export function SimilarSearch({ setMode }: SimilarSearchProps) {
     const [sourceImages, setSourceImages] = useState<SourceImage[]>([]);
+    const [resultImages, setResultImages] = useState<SourceImage[]>([]);
+
     const [targetImage, setTargetImage] = useState<IndexedImage | undefined>();
 
     const [targetImageDialog, setTargetImageDialog] = useState(false);
 
     const [canvasToken, setCanvasToken] = useState(Date.now());
+
+    /* =---: Search  :---= */
+
+    useEffect(() => {
+        setResultImages([]);
+        if (!targetImage) return;
+
+    }, [sourceImages, targetImage]);
 
     /* =---: Actions :---= */
 
@@ -66,13 +76,14 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
     }, [sourceImages]);
 
     const onClearImages = useCallback(() => setSourceImages([]), []);
+    const onClearTargetImage = useCallback(() => setTargetImage(undefined), []);
 
     const openTargetImageDialog = useCallback(() => setTargetImageDialog(true), []);
     const closeTargetImageDialog = useCallback(() => setTargetImageDialog(false), []);
 
     return <>
         <CanvasLayer resetToken={canvasToken}>
-            {sourceImages.map(({ data, dataURL, path }) => <img
+            {(targetImage ? resultImages : sourceImages).map(({ data, dataURL, path }) => <img
                 key={path} src={dataURL} alt={path}
                 width={data.width} height={data.height}
             />)}
@@ -84,6 +95,7 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
             onClearImages={sourceImages.length === 0 ? undefined : onClearImages}
 
             onOpenTargetImageDialog={openTargetImageDialog}
+            onClearTargetImage={targetImage ? onClearTargetImage : undefined}
         />
         <TargetImageDialog setTargetImage={setTargetImage}
             open={targetImageDialog} onClose={closeTargetImageDialog} />
