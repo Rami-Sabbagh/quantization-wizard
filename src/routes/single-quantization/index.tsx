@@ -4,7 +4,7 @@ import defaultImage from 'assets/grad_default.png';
 
 import { saveAs } from 'file-saver';
 
-import { loadImageData, toDataURL } from 'lib/images/browser/loader';
+import { loadBlobIntoDataURL, loadImageData, toDataURL } from 'lib/images/browser/loader';
 import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
 import { decodeIndexedBinImage, encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 import { RGBA } from 'lib/images/interfaces';
@@ -74,11 +74,9 @@ export function SingleQuantization({ setMode }: SingleQuantizationProps) {
 
     const onLoadImage = useCallback((imageFile: File) => {
         URL.revokeObjectURL(sourceImage);
-        if (imageFile.type === 'application/octet-stream')
-            decodeIndexedBinImage(imageFile).then(({ data }) => {
-                setSourceImage(toDataURL(data));
-            }).catch(console.error);
-        else setSourceImage(URL.createObjectURL(imageFile));
+        loadBlobIntoDataURL(imageFile)
+            .then(setSourceImage)
+            .catch(console.error);
     }, [sourceImage, setSourceImage]);
 
 

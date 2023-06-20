@@ -6,7 +6,7 @@ import { AppMode } from 'components/app-mode-switch';
 import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
 import { blobToDataURL } from 'lib/dataurl-utils';
 
-import { loadImageData, toBlob, toDataURL } from 'lib/images/browser/loader';
+import { loadBlobIntoDataURL, loadImageData, toBlob, toDataURL } from 'lib/images/browser/loader';
 import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
 import { decodeIndexedBinImage, encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 import { CanvasLayer } from 'components/canvas-layer';
@@ -42,11 +42,7 @@ async function loadAllImages(handles: FilesHandlesList, acceptedTypes: string[] 
             continue;
         };
 
-        if (file.type === 'application/octet-stream') {
-            results.push({ path, dataURL: toDataURL((await decodeIndexedBinImage(file)).data) });
-        } else {
-            results.push({ path, dataURL: await blobToDataURL(file) });
-        }
+        results.push({ path, dataURL: await loadBlobIntoDataURL(file) });
     }
 
     return results;

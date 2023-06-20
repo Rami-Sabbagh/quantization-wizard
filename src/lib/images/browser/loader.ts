@@ -1,3 +1,5 @@
+import { decodeIndexedBinImage } from '../indexed-bin-coder';
+
 if (!document) throw new Error('Unsupported in workers/node.ks!');
 
 const imageElement: HTMLImageElement = document.querySelector('#internal-image')!;
@@ -71,4 +73,14 @@ export async function toBlob(imageData: ImageData): Promise<Blob> {
             else reject('Failed to create blob.');
         })
     });
+}
+
+export async function loadBlobIntoDataURL(blob: Blob) {
+    if (blob.type === 'application/octet-stream')
+    {
+        const indexedImage = await decodeIndexedBinImage(blob);
+        return toDataURL(indexedImage.data);
+    }
+
+    return URL.createObjectURL(blob);
 }
