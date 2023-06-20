@@ -26,13 +26,11 @@ export function ToolBar({ setMode, onOpenTargetImageDialog }: ToolBarProps) {
         <IconButtonWithTooltip
             title="Open/Load Source Images"
             icon={<FolderOpenIcon />}
-            onClick={() => { }}
         />
 
         <IconButtonWithTooltip
             title="Clear Source Images"
             icon={<ClearIcon />}
-            onClick={() => { }}
         />
 
         <div className="separator" />
@@ -48,13 +46,11 @@ export function ToolBar({ setMode, onOpenTargetImageDialog }: ToolBarProps) {
         <IconButtonWithTooltip
             title="Export/Save Similar Images"
             icon={<SaveAltIcon />}
-            onClick={() => { }}
         />
 
         <IconButtonWithTooltip
             title="Show Similar Images Path"
             icon={<PageviewIcon />}
-            onClick={() => { }}
         />
 
         <div className="spacer" />
@@ -62,13 +58,11 @@ export function ToolBar({ setMode, onOpenTargetImageDialog }: ToolBarProps) {
         <IconButtonWithTooltip
             title="Search Options"
             icon={<TuneIcon />}
-            onClick={() => { }}
         />
 
         <IconButtonWithTooltip
             title="Research"
             icon={<RefreshIcon />}
-            onClick={() => { }}
         />
 
     </div>;
