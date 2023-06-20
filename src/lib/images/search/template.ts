@@ -5,7 +5,7 @@ import { IndexedImage, SearchOptions } from '../interfaces';
  * 
  * @param target The image which want to find similar images to.
  * @param images The images to search in.
- * @param colors The indexes of the colors selected from the target image to be searched by.
+ * @param options The search options.
  * @returns An array of the indexes of the similar images.
  */
 export function findSimilarSync(target: IndexedImage, images: IndexedImage[], {
