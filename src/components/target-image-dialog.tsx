@@ -89,8 +89,6 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
 
     // Source Image
     useEffect(() => {
-        setSourceImage(undefined);
-
         const controller = new AbortController();
 
         (async () => {
