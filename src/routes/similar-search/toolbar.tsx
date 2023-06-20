@@ -4,7 +4,6 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import ClearIcon from '@mui/icons-material/Clear';
 import ImageIcon from '@mui/icons-material/Image';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
-import PageviewIcon from '@mui/icons-material/Pageview';
 import TuneIcon from '@mui/icons-material/Tune';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
@@ -19,12 +18,19 @@ interface ToolBarProps {
 
     onOpenTargetImageDialog?: () => void;
     onClearTargetImage?: () => void;
+
+    onSaveResultImages?: () => void;
+
+    onOpenOptionsDialog?: () => void;
+    onResearch?: () => void;
 }
 
 export function ToolBar({
     setMode,
     onLoadImages, onClearImages,
     onOpenTargetImageDialog, onClearTargetImage,
+    onSaveResultImages,
+    onOpenOptionsDialog, onResearch,
 }: ToolBarProps) {
 
     return <div className="toolbar">
@@ -61,11 +67,7 @@ export function ToolBar({
         <IconButtonWithTooltip
             title="Export/Save Similar Images"
             icon={<SaveAltIcon />}
-        />
-
-        <IconButtonWithTooltip
-            title="Show Similar Images Path"
-            icon={<PageviewIcon />}
+            onClick={onSaveResultImages}
         />
 
         <div className="spacer" />
@@ -73,11 +75,13 @@ export function ToolBar({
         <IconButtonWithTooltip
             title="Search Options"
             icon={<TuneIcon />}
+            onClick={onOpenOptionsDialog}
         />
 
         <IconButtonWithTooltip
             title="Research"
             icon={<RefreshIcon />}
+            onClick={onResearch}
         />
 
     </div>;
