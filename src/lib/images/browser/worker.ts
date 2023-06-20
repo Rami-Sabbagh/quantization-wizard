@@ -43,7 +43,6 @@ const cropHandler: TaskHandler<CropTask> = (task) => {
 const downscaleHandler: TaskHandler<DownscaleTask> = (task) => {
     const { data, width, height } = task;
     return { data: downscaleSync(data, width, height) };
-    ;
 }
 
 onmessage = ({ data: task }: MessageEvent<AsyncTask>) => {
