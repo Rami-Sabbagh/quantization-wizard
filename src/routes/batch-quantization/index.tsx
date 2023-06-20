@@ -4,11 +4,10 @@ import { ToolBar } from './toolbar';
 import { AppMode } from 'components/app-mode-switch';
 
 import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
-import { blobToDataURL } from 'lib/dataurl-utils';
 
 import { loadBlobIntoDataURL, loadImageData, toBlob, toDataURL } from 'lib/images/browser/loader';
 import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
-import { decodeIndexedBinImage, encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
+import { encodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 import { CanvasLayer } from 'components/canvas-layer';
 import { CompareFrame } from 'components/compare-frame';
 

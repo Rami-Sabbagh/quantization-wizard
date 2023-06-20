@@ -5,8 +5,6 @@ import ClearIcon from '@mui/icons-material/Clear';
 import ImageIcon from '@mui/icons-material/Image';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import PageviewIcon from '@mui/icons-material/Pageview';
-// import CropIcon from '@mui/icons-material/Crop';
-// import ImageAspectRatioIcon from '@mui/icons-material/ImageAspectRatio';
 import TuneIcon from '@mui/icons-material/Tune';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
