@@ -14,21 +14,30 @@ import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 interface ToolBarProps {
     setMode?: (mode: AppMode) => void;
 
+    onLoadImages?: () => void;
+    onClearImages?: () => void;
     onOpenTargetImageDialog?: () => void;
 }
 
-export function ToolBar({ setMode, onOpenTargetImageDialog }: ToolBarProps) {
+export function ToolBar({
+    setMode,
+    onLoadImages, onClearImages,
+    onOpenTargetImageDialog,
+}: ToolBarProps) {
+
     return <div className="toolbar">
         {setMode && <AppModeSwitch active="similar-search" setMode={setMode} />}
 
         <IconButtonWithTooltip
             title="Open/Load Source Images"
             icon={<FolderOpenIcon />}
+            onClick={onLoadImages}
         />
 
         <IconButtonWithTooltip
             title="Clear Source Images"
             icon={<ClearIcon />}
+            onClick={onClearImages}
         />
 
         <div className="separator" />
