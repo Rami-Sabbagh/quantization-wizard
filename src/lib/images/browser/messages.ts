@@ -60,7 +60,7 @@ export interface SearchTask extends Task<'search'> {
 export interface SearchResult extends Result<'search'> {
     id: number,
     type: 'search',
-    images: IndexedImage[],
+    indexes: number[],
 }
 
 type AsyncTaskTable = {

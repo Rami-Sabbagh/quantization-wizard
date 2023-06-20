@@ -48,7 +48,7 @@ const downscaleHandler: TaskHandler<'downscale'> = (task) => {
 
 const searchHandler: TaskHandler<'search'> = (task) => {
     const { target, images, colors } = task
-    return { images: findSimilarSync(target, images, colors) };
+    return { indexes: findSimilarSync(target, images, colors) };
 }
 
 onmessage = ({ data: task }: MessageEvent<AsyncTask>) => {

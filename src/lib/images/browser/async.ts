@@ -83,12 +83,12 @@ export async function downscale(image: ImageData, width: number, height: number,
     return result?.data ?? null;
 }
 
-export async function findSimilar(target: IndexedImage, images: IndexedImage[], colors: number[] = [], signal?: AbortSignal): Promise<IndexedImage[] | null> {
+export async function findSimilar(target: IndexedImage, images: IndexedImage[], colors: number[] = [], signal?: AbortSignal): Promise<number[] | null> {
     const result = await executeTask<'search'>({
         id: -1,
         type: 'search',
         target, images, colors,
     }, signal);
 
-    return result?.images ?? null;
+    return result?.indexes ?? null;
 }

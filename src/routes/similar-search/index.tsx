@@ -10,6 +10,7 @@ import { FilesHandlesList, findAllFiles } from 'lib/fs-utils';
 import { decodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
 import { toDataURL } from 'lib/images/browser/loader';
 import { CanvasLayer } from 'components/canvas-layer';
+import { findSimilar } from 'lib/images/browser/async';
 
 interface SourceImage extends IndexedImage {
     path: string;
@@ -53,6 +54,18 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
         setResultImages([]);
         if (!targetImage) return;
 
+        const controller = new AbortController();
+
+        (async () => {
+            const results = await findSimilar(targetImage, sourceImages,
+                undefined, controller.signal);
+            if (!results) return;
+
+            setResultImages(results.map(index => sourceImages[index]));
+            setCanvasToken(Date.now());
+        })().catch(console.error);
+
+        return () => controller.abort();
     }, [sourceImages, targetImage, searchToken]);
 
     /* =---: Actions :---= */
