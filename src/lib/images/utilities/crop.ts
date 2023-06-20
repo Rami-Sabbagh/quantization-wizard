@@ -9,22 +9,18 @@
      */
 
 export function crop(image: ImageData, minX: number, minY: number, maxX: number, maxY: number): ImageData {
-
-    // Calculate the dimensions of the cropped region
     const width = maxX - minX;
     const height = maxY - minY;
 
-    // Create a new ImageData object for the cropped region
-    const croppedImage = new ImageData(width, height);
+    const result = new ImageData(width, height);
+    const dstData = new Uint32Array(result.data.buffer);
 
-    // Copy the pixels from the original image to the cropped image
     for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const srcIdx = ((y + minY) * image.width + (x + minX)) * 4;
-            const destIdx = (y * width + x) * 4;
-            croppedImage.data.set(image.data.slice(srcIdx, srcIdx + 4), destIdx);
-        }
+        // Create a view of the line to copy.
+        const line = new Uint32Array(image.data.buffer,
+            ((minY + y) * image.width + minX) * 4, width);
+        dstData.set(line, y * width);
     }
 
-    return croppedImage;
+    return result;
 }
