@@ -1,5 +1,5 @@
 import { fromImageData } from "./imagedata";
-import { AsyncTask, AsyncTaskResult, CropTask, DownscaleTask, QuantizationTask } from "./messages";
+import { AsyncTask, AsyncResult, AsyncTaskType, CropTask, DownscaleTask, QuantizationTask } from "./messages";
 
 import { kMeansSync } from "../quantization/k-means";
 import { medianCutSync } from "../quantization/median-cut";
@@ -9,10 +9,11 @@ import { popularitySync } from "../quantization/popularity";
 import { QuantizationReport } from '../interfaces';
 import { cropSync } from '../utilities/crop';
 import { downscaleSync } from '../utilities/downscale';
+import { findSimilarSync } from '../search/template';
 
-type TaskHandler<T extends AsyncTask> = (task: T) => Omit<AsyncTaskResult<T>, 'id' | 'type'>;
+type TaskHandler<T extends AsyncTaskType> = (task: AsyncTask<T>) => Omit<AsyncResult<T>, 'id' | 'type'>;
 
-const quantizationHandler: TaskHandler<QuantizationTask> = (task) => {
+const quantizationHandler: TaskHandler<'quantization'> = (task) => {
     const { id, algorithm, data, count } = task;
 
     console.log(
@@ -35,14 +36,19 @@ const quantizationHandler: TaskHandler<QuantizationTask> = (task) => {
     };
 };
 
-const cropHandler: TaskHandler<CropTask> = (task) => {
+const cropHandler: TaskHandler<'crop'> = (task) => {
     const { data, minX, minY, maxX, maxY } = task;
     return { data: cropSync(data, minX, minY, maxX, maxY) };
 };
 
-const downscaleHandler: TaskHandler<DownscaleTask> = (task) => {
+const downscaleHandler: TaskHandler<'downscale'> = (task) => {
     const { data, width, height } = task;
     return { data: downscaleSync(data, width, height) };
+}
+
+const searchHandler: TaskHandler<'search'> = (task) => {
+    const { target, images, colors } = task
+    return { images: findSimilarSync(target, images, colors) };
 }
 
 onmessage = ({ data: task }: MessageEvent<AsyncTask>) => {
@@ -51,4 +57,5 @@ onmessage = ({ data: task }: MessageEvent<AsyncTask>) => {
     if (type === 'quantization') postMessage({ id, type, ...quantizationHandler(task) });
     if (type === 'crop') postMessage({ id, type, ...cropHandler(task) });
     if (type === 'downscale') postMessage({ id, type, ...downscaleHandler(task) });
+    if (type === 'search') postMessage({ id, type, ...searchHandler(task) });
 };
