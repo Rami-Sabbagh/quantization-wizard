@@ -12,11 +12,13 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 import { AlgorithmSelector } from 'components/algorithm-selector';
 import { PaletteSizeBox } from './palette-size-box';
-import { QuantizationAlgorithm } from 'lib/images/browser/async';
+import { QuantizationAlgorithm, quantize } from 'lib/images/browser/async';
 import { NumericFormatCustom } from './numeric-format-custom';
 import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
-import { loadBlobIntoDataURL, loadImageData } from 'lib/images/browser/loader';
+import { loadBlobIntoDataURL, loadImageData, toDataURL } from 'lib/images/browser/loader';
 import { IndexedImage } from 'lib/images/interfaces';
+import { crop } from 'lib/images/utilities/crop';
+import { downscale } from 'lib/images/utilities/downscale';
 
 type CropFieldHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 type CropSide = 'left' | 'right' | 'top' | 'bottom';
@@ -72,19 +74,20 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
     const [previewResult, setPreviewResult] = useState(false);
     const [paletteSize, setPaletteSize] = useState('8');
     const [algorithm, setAlgorithm] = useState<QuantizationAlgorithm>('k-means');
-    const [cropLimits, setCropLimits] = useState({ left: '', right: '', top: '', bottom: '' });
+    const [quantizationToken, setQuantizationToken] = useState(Date.now());
 
-    const initScale = 40;
+    const initScale = 100; // FIXME: change to 40
     const [scale, setScale] = useState(initScale);
+    const [cropLimits, setCropLimits] = useState({ left: '', right: '', top: '', bottom: '' });
 
     const resetCropLimits = useCallback(() =>
         setCropLimits({ left: '', right: '', top: '', bottom: '' }), []);
 
     const resetScale = useCallback(() => setScale(initScale), []);
 
-    // =---: Image Rendering  :---= //
+    /* =---: Image Rendering  :---= */
 
-    // Source-Image
+    // Source Image
     useEffect(() => {
         setSourceImage(undefined);
 
@@ -97,17 +100,63 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
                 Object.fromEntries(Object.entries(cropLimits).map(([key, value]) =>
                     [key, value === '' ? 0 : Number.parseInt(value)])) as any;
 
-            if (Object.entries(cropValues).some(([, value]) => value !== 0))
-                console.log(cropValues, cropLimits);
+            if (Object.entries(cropValues).some(([, value]) => value !== 0)) {
+                let { left, right, top, bottom } = cropValues;
 
+                const minX = Math.min(left, image.width - 2);
+                const maxX = Math.max(minX + 1, image.width - right);
+                const minY = Math.min(top, image.height - 2);
+                const maxY = Math.max(minY + 1, image.height - bottom);
 
+                image = crop(image, minX, minY, maxX, maxY);
+            }
+
+            if (scale !== 100) image = downscale(image,
+                Math.floor(image.width * scale / 100),
+                Math.floor(image.height * scale / 100),
+            )
 
             // Prevent state changes if aborted.
             if (controller.signal.aborted) return;
+
+            setSourceImage(image);
         })().catch(console.error);
 
         return () => controller.abort();
     }, [originalImage, cropLimits, scale]);
+
+    // Result image
+    useEffect(() => {
+        if (!sourceImage || !previewResult) return;
+        if (resultImage) return;
+
+        const size = Number.parseInt(paletteSize);
+        if (isNaN(size) || size <= 0 || size > 256) return;
+
+        const controller = new AbortController();
+
+        (async () => {
+            const result = await quantize(sourceImage, algorithm, size, controller.signal);
+            if (result) {
+                // Prevent state changes if aborted.
+                if (controller.signal.aborted) return;
+
+                setResultImage(result);
+            };
+        })().catch(console.error);
+
+        return () => controller.abort();
+    }, [sourceImage, resultImage, previewResult, algorithm, paletteSize, quantizationToken]);
+
+    useEffect(() => setResultImage(undefined),
+        [quantizationToken, sourceImage, algorithm, paletteSize]);
+
+    // Display Image
+    useEffect(() => {
+        if (!previewResult && sourceImage) setDisplayImage(toDataURL(sourceImage));
+        else if (previewResult && resultImage) setDisplayImage(toDataURL(resultImage.data));
+        else setDisplayImage(undefined);
+    }, [previewResult, sourceImage, resultImage]);
 
     // =---: Changes Handlers :---= //
 
@@ -138,6 +187,10 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
     const togglePreviewResult = useCallback(() => {
         setPreviewResult(!previewResult);
     }, [previewResult]);
+
+    const reperformQuantization = useCallback(() => {
+        setQuantizationToken(Date.now());
+    }, []);
 
     // =---:        UI        :---= //
 
@@ -173,7 +226,7 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
                                 <IconButtonWithTooltip
                                     title='Reperform Quantization'
                                     icon={<RefreshIcon />}
-                                    onClick={() => { }}
+                                    onClick={resultImage && reperformQuantization}
                                 />
                             </Stack>
                         </Grid>
@@ -204,7 +257,8 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
                                 <IconButtonWithTooltip
                                     title='Reset'
                                     icon={<RefreshIcon />}
-                                    onClick={resetCropLimits}
+                                    onClick={Object.entries(cropLimits).some(([, value]) => value !== '')
+                                        ? resetCropLimits : undefined}
                                 />
                             </Stack>
                         </Grid>
@@ -230,7 +284,7 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
                                 <IconButtonWithTooltip
                                     title='Reset'
                                     icon={<RefreshIcon />}
-                                    onClick={resetScale}
+                                    onClick={scale !== initScale ? resetScale : undefined}
                                 />
                             </Stack>
                         </Grid>
@@ -266,7 +320,7 @@ export function TargetImageDialog({ open, onClose }: TargetImageDialogProps) {
             <Button onClick={openFileDialog}>Load Image</Button>
             <div style={{ flex: 'auto' }} />
             <Button onClick={onClose}>Cancel</Button>
-            <Button>Use</Button>
+            <Button disabled={!resultImage}>Use</Button>
         </DialogActions>
     </Dialog>
 }
