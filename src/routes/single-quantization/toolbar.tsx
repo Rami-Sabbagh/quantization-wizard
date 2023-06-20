@@ -1,6 +1,5 @@
 import React, { useRef, useCallback } from 'react';
 
-import { IconButton, InputAdornment, MenuItem, OutlinedInput, Select, Tooltip } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -9,29 +8,13 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import GifBoxIcon from '@mui/icons-material/GifBox';
 
 import { QuantizationAlgorithm } from 'lib/images/browser/async';
-import { NumericFormatCustom } from 'components/numeric-format-custom';
-import { SelectChangeEvent } from '@mui/material/Select/SelectInput';
 
-import { algorithmDisplayName } from 'lib/locale';
-import { AppMode, AppModeSwitch } from 'components/app-mode-switch';
 import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
 
-interface ToolBarIconButtonProp {
-    title: string;
-    icon: JSX.Element;
-
-    onClick?: () => void;
-}
-
-function ToolBarIconButton({ title, icon, onClick }: ToolBarIconButtonProp) {
-    return <Tooltip title={title}>
-        <span>
-            <IconButton disabled={!onClick} onClick={onClick}>
-                {icon}
-            </IconButton>
-        </span>
-    </Tooltip>;
-}
+import { AppMode, AppModeSwitch } from 'components/app-mode-switch';
+import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
+import { AlgorithmSelector } from 'components/algorithm-selector';
+import { PaletteSizeBox } from 'components/palette-size-box';
 
 interface ToolBarProps {
     setMode?: (mode: AppMode) => void;
@@ -74,40 +57,27 @@ export function ToolBar({
         onLoadImage(event.target.files[0]);
     }, [onLoadImage]);
 
-    type AlgorithmChangeHandler = (event: SelectChangeEvent<QuantizationAlgorithm>) => void;
 
 
-    const onAlgorithmChange = useCallback<AlgorithmChangeHandler>((ev) => {
-        if (!setAlgorithm) return;
-        setAlgorithm(ev.target.value as QuantizationAlgorithm);
-    }, [setAlgorithm]);
-
-    type PaletteSizeChangeHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
-
-    const onPaletteSizeChange = useCallback<PaletteSizeChangeHandler>((ev) => {
-        if (!setPaletteSize) return;
-        setPaletteSize(ev.target.value);
-    }, [setPaletteSize]);
-
-    const paletteSizeParsed = Number.parseInt(paletteSize ?? '');
-    const paletteSizeInvalid = isNaN(paletteSizeParsed) || paletteSizeParsed < 1 || paletteSizeParsed > 256;
 
     return <div className="toolbar">
         {setMode && <AppModeSwitch active='single-quantization' setMode={setMode} />}
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Open/Load Image"
             icon={<FolderOpenIcon />}
             onClick={openFileDialog}
         />
 
-        <ToolBarIconButton
+        <div className="separator" />
+
+        <IconButtonWithTooltip
             title="Export/Save Image"
             icon={<SaveAltIcon />}
             onClick={onSaveImage}
         />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Export/Save Indexed Image"
             icon={<GifBoxIcon />}
             onClick={onSaveIndexedImage}
@@ -115,51 +85,27 @@ export function ToolBar({
 
         <div className='spacer' />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Show Histogram"
             icon={<BarChartIcon />}
             onClick={showHistogram}
         />
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Show Color Palette"
             icon={<PaletteIcon />}
             onClick={showPalette}
         />
 
-        {
-            algorithm !== undefined && <Select
-                id="algorithm"
-                value={algorithm}
-                onChange={onAlgorithmChange}
-                sx={{ width: '18ch', minWidth: '18ch', marginTop: '1px' }}
-                margin='none'
-                disabled={!setAlgorithm}
-            >
-                {Object.entries(algorithmDisplayName).map(([id, name]) =>
-                    <MenuItem key={id} value={id}>{name}</MenuItem>
-                )}
-            </Select>
-        }
+        {algorithm !== undefined && <AlgorithmSelector
+            algorithm={algorithm} setAlgorithm={setAlgorithm}
+        />}
 
-        {
-            paletteSize !== undefined && <OutlinedInput
-                id="palette-size"
-                value={paletteSize}
-                onChange={onPaletteSizeChange}
-                endAdornment={<InputAdornment position="end">colors</InputAdornment>}
-                size="small"
-                sx={{ width: '12ch', minWidth: '12ch', marginTop: '1px' }}
-                margin='none'
-                inputProps={{
-                    inputComponent: NumericFormatCustom as any,
-                }}
-                error={paletteSizeInvalid}
-                disabled={!setPaletteSize}
-            />
-        }
+        {paletteSize !== undefined && <PaletteSizeBox
+            paletteSize={paletteSize} setPaletteSize={setPaletteSize}
+        />}
 
-        <ToolBarIconButton
+        <IconButtonWithTooltip
             title="Reperform Quantization"
             icon={<RefreshIcon />}
             onClick={reperformQuantization}
