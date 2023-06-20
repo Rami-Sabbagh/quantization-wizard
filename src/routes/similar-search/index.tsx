@@ -97,7 +97,7 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
     const research = useCallback(() => setSearchToken(Date.now()), []);
 
     return <>
-        <CanvasLayer resetToken={canvasToken}>
+        <CanvasLayer resetToken={targetImage && resultImages.length === 0 ? undefined : canvasToken}>
             {(targetImage ? resultImages : sourceImages).map(({ data, dataURL, path }) => <img
                 key={path} src={dataURL} alt={path}
                 width={data.width} height={data.height}
