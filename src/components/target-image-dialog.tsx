@@ -15,9 +15,10 @@ import { PaletteSizeBox } from 'components/palette-size-box';
 import { NumericFormatCustom } from 'components/numeric-format-custom';
 
 import { ACCEPTED_IMAGE_TYPES } from 'lib/config';
-import { QuantizationAlgorithm, crop, downscale, quantize } from 'lib/images/browser/async';
+import { QuantizationAlgorithm, crop, quantize } from 'lib/images/browser/async';
 import { loadBlobIntoDataURL, loadImageData, toDataURL } from 'lib/images/browser/loader';
 import { IndexedImage } from 'lib/images/interfaces';
+import { downscaleSync } from 'lib/images/utilities/downscale';
 
 type CropFieldHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 type CropSide = 'left' | 'right' | 'top' | 'bottom';
@@ -114,10 +115,10 @@ export function TargetImageDialog({ open, onClose, setTargetImage }: TargetImage
             }
 
             if (scale !== 100) {
-                const result = await downscale(image,
+                const result = downscaleSync(image,
                     Math.max(Math.floor(image.width * scale / 100), 1),
                     Math.max(Math.floor(image.height * scale / 100), 1),
-                    controller.signal);
+                );
                 if (!result) return;
 
                 image = result;
