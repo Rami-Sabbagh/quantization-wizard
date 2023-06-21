@@ -233,7 +233,7 @@ export function SearchOptionsDialog({
                     <Grid xs={12}>
                         <Stack direction='row' alignItems='center' spacing={.5}>
                             <Typography style={{ marginRight: 'auto' }}>
-                                Modification date
+                                Modification Date
                             </Typography>
 
                             <IconButtonWithTooltip
