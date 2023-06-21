@@ -207,7 +207,7 @@ export function TargetImageDialog({ open, onClose, setTargetImage }: TargetImage
 
     // =---:        UI        :---= //
 
-    return <Dialog maxWidth='md' fullWidth scoll='body' open={open} onClose={onClose}>
+    return <Dialog maxWidth='md' fullWidth scroll='body' open={open} onClose={onClose}>
         <DialogTitle>Target Image</DialogTitle>
         <DialogContent>
 
