@@ -9,7 +9,7 @@ import { SearchOptionsDialog } from 'components/search-options-dialog';
 import { IndexedImage, SearchOptions } from 'lib/images/interfaces';
 import { FilesHandlesList, findAllFiles } from 'lib/fs-utils';
 import { decodeIndexedBinImage } from 'lib/images/indexed-bin-coder';
-import { toDataURL } from 'lib/images/browser/loader';
+import { toBlob, toDataURL } from 'lib/images/browser/loader';
 import { CanvasLayer } from 'components/canvas-layer';
 import { findSimilar } from 'lib/images/browser/async';
 
@@ -96,6 +96,41 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
         setSearchOptions({ ...searchOptions, colors: undefined });
     }, [searchOptions]);
 
+    const onSaveResultImages = useCallback(() => {
+        if (resultImages.length === 0) return;
+
+        showDirectoryPicker({
+            id: 'similar-images-output',
+            mode: 'readwrite',
+            startIn: 'pictures',
+        })
+            .catch(() => console.log('User cancelled directory input.'))
+            .then(async (directory) => {
+                if (!directory) return;
+
+                // FIXME: Display a progress dialog while writing files.
+
+                let nextId = 0;
+                const prefixLen = `${resultImages.length}`.length;
+
+                for (const image of resultImages) {
+                    let prefix = `${++nextId}`;
+                    prefix = `${'0'.repeat(prefixLen - prefix.length)}${prefix}`;
+
+                    let originalFileName = image.path.split('/').pop() ?? 'unknown.png.bin';
+                    let fileName = `${prefix}-${originalFileName.substring(0, originalFileName.length - 4)}`;
+
+                    const blob = await toBlob(image.data);
+                    const handle = await directory.getFileHandle(fileName, { create: true });
+
+                    const stream = await handle.createWritable();
+                    await stream.write(blob);
+                    await stream.close();
+                }
+            })
+            .catch(console.error);
+    }, [resultImages]);
+
     const onClearImages = useCallback(() => setSourceImages([]), []);
     const onClearTargetImage = useCallback(() => setTargetImage(undefined), []);
 
@@ -124,6 +159,8 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
 
             onOpenTargetImageDialog={openTargetImageDialog}
             onClearTargetImage={targetImage ? onClearTargetImage : undefined}
+
+            onSaveResultImages={resultImages.length === 0 ? undefined : onSaveResultImages}
 
             onOpenOptionsDialog={openSearchOptionsDialog}
             onResearch={targetImage ? research : undefined}
