@@ -31,4 +31,7 @@ export interface SearchOptions {
 
     minFileSize?: number,
     maxFileSize?: number,
+
+    beforeDate?: Date,
+    afterDate?: Date,
 }

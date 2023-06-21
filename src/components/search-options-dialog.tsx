@@ -1,5 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 
+import dayjs, { Dayjs } from 'dayjs';
+
+import { DatePicker } from '@mui/x-date-pickers';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, InputAdornment, Slider, Stack, TextField, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
 import SelectAllIcon from '@mui/icons-material/SelectAll';
@@ -11,7 +14,6 @@ import { IndexedImage, SearchOptions } from 'lib/images/interfaces';
 import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 import { ColorMultiSelector, DetailedPaletteColor } from 'components/color-multi-selector';
 import { NumericFormatCustom } from 'components/numeric-format-custom';
-import { DatePicker } from '@mui/x-date-pickers';
 
 const thresholdMarks = [
     { value: 25 },
@@ -44,7 +46,7 @@ function FileSizeField({ label, invalid, value, onChange }: FileSizeFieldProps) 
         fullWidth
 
         InputProps={{
-            endAdornment: <InputAdornment position="end">kbytes</InputAdornment>,
+            endAdornment: <InputAdornment position="end">kBytes</InputAdornment>,
             inputComponent: NumericFormatCustom as any,
         }}
     />;
@@ -112,6 +114,22 @@ export function SearchOptionsDialog({
         setOptions({ ...options, [field]: value });
     }, [options]);
 
+    const onAfterDateChange = useCallback((date: Dayjs | null) => {
+        if (date && !date.isValid()) return;
+        setOptions({
+            ...options,
+            afterDate: date ? date.toDate() : undefined
+        });
+    }, [options]);
+
+    const onBeforeDateChange = useCallback((date: Dayjs | null) => {
+        if (date && !date.isValid()) return;
+        setOptions({
+            ...options,
+            beforeDate: date ? date.toDate() : undefined
+        });
+    }, [options]);
+
     /* =---: Actions :---= */
 
     const applyOptions = useCallback(() => {
@@ -134,11 +152,17 @@ export function SearchOptionsDialog({
         setOptions({ ...options, minFileSize: undefined, maxFileSize: undefined });
     }, [options]);
 
+    const resetDates = useCallback(() => {
+        setOptions({ ...options, beforeDate: undefined, afterDate: undefined });
+    }, [options]);
+
     /* =---:  View   :---= */
 
     const fileSizeCanBeReset = options.minFileSize !== undefined || options.maxFileSize;
     const fileSizeInvalid = options.minFileSize !== undefined && options.maxFileSize !== undefined
         && options.minFileSize > options.maxFileSize;
+
+    const datesCanBeReset = options.afterDate !== undefined || options.beforeDate !== undefined;
 
     return <Dialog maxWidth='sm' fullWidth scroll='body' open={open} onClose={onClose}>
         <DialogTitle>Search Options</DialogTitle>
@@ -215,7 +239,7 @@ export function SearchOptionsDialog({
                             <IconButtonWithTooltip
                                 title='Reset'
                                 icon={<RefreshIcon />}
-                                onClick={() => { }}
+                                onClick={datesCanBeReset ? resetDates : undefined}
                             />
                         </Stack>
                     </Grid>
@@ -223,8 +247,12 @@ export function SearchOptionsDialog({
                     <Grid xs={12}>
                         <Stack direction='row' spacing={1}>
                             <div style={{ flex: 1 }} />
-                            <DatePicker label="After" />
-                            <DatePicker label="Before" />
+                            <DatePicker label="After"
+                                value={options.afterDate ? dayjs(options.afterDate) : null}
+                                onChange={onAfterDateChange} />
+                            <DatePicker label="Before"
+                                value={options.beforeDate ? dayjs(options.beforeDate) : null}
+                                onChange={onBeforeDateChange} />
                             <div style={{ flex: 1 }} />
                         </Stack>
                     </Grid>
