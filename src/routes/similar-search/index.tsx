@@ -46,7 +46,7 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
     const [searchOptions, setSearchOptions] = useState<SearchOptions>({});
 
     const [targetImageDialog, setTargetImageDialog] = useState(false);
-    const [searchOptionsDialog, setSearchOptionsDialog] = useState(false);
+    const [searchOptionsDialog, setSearchOptionsDialog] = useState(true);
 
     const [canvasToken, setCanvasToken] = useState(Date.now());
     const [searchToken, setSearchToken] = useState(Date.now());

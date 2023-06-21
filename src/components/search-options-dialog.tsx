@@ -1,20 +1,53 @@
 import React, { useState, useCallback, useEffect } from 'react';
 
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Slider, Stack, Typography } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, InputAdornment, Slider, Stack, TextField, Typography } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2/Grid2';
 import SelectAllIcon from '@mui/icons-material/SelectAll';
 import DeselectIcon from '@mui/icons-material/Deselect';
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import { IndexedImage, SearchOptions } from 'lib/images/interfaces';
 
 import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 import { ColorMultiSelector, DetailedPaletteColor } from 'components/color-multi-selector';
+import { NumericFormatCustom } from 'components/numeric-format-custom';
 
 const thresholdMarks = [
     { value: 25 },
     { value: 50 },
     { value: 75 },
 ];
+
+type FileSizeHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+
+interface FileSizeFieldProps {
+    label: 'min' | 'max',
+    invalid?: boolean,
+    value?: string,
+    onChange?: FileSizeHandler,
+}
+
+function FileSizeField({ label, invalid, value, onChange }: FileSizeFieldProps) {
+    return <TextField
+        id={`file-size-${label}`}
+        name={label}
+        label={label}
+
+        value={value}
+        onChange={onChange}
+
+        size='small'
+        margin='none'
+        error={invalid}
+
+        fullWidth
+
+        InputProps={{
+            endAdornment: <InputAdornment position="end">kbytes</InputAdornment>,
+            inputComponent: NumericFormatCustom as any,
+        }}
+    />;
+}
 
 interface SearchOptionsDialogProps {
     open: boolean,
@@ -66,6 +99,18 @@ export function SearchOptionsDialog({
         setOptions({ ...options, colors });
     }, [options]);
 
+    const onFileSizeChange = useCallback<FileSizeHandler>((ev) => {
+        const field = ev.target?.name === 'min' ? 'minFileSize' : 'maxFileSize';
+        let rawValue: string | undefined = ev.target?.value;
+        if (rawValue === '') rawValue = undefined;
+
+        let value: number | undefined = rawValue !== undefined
+            ? Number.parseInt(rawValue ?? '') : undefined;
+        if (value !== undefined && isNaN(value)) value = undefined;
+
+        setOptions({ ...options, [field]: value });
+    }, [options]);
+
     /* =---: Actions :---= */
 
     const applyOptions = useCallback(() => {
@@ -84,9 +129,17 @@ export function SearchOptionsDialog({
         setOptions({ ...options, colors: [] });
     }, [options]);
 
+    const resetFileSize = useCallback(() => {
+        setOptions({ ...options, minFileSize: undefined, maxFileSize: undefined });
+    }, [options]);
+
     /* =---:  View   :---= */
 
-    return <Dialog maxWidth='sm' fullWidth open={open} onClose={onClose}>
+    const fileSizeCanBeReset = options.minFileSize !== undefined || options.maxFileSize;
+    const fileSizeInvalid = options.minFileSize !== undefined && options.maxFileSize !== undefined
+        && options.minFileSize > options.maxFileSize;
+
+    return <Dialog maxWidth='sm' fullWidth scroll='body' open={open} onClose={onClose}>
         <DialogTitle>Search Options</DialogTitle>
         <DialogContent>
             <Grid container>
@@ -119,6 +172,55 @@ export function SearchOptionsDialog({
                             selected={options.colors ?? []}
                             setSelected={setSelectedColors}
                         />
+                    </Grid>
+                </>
+
+                <>
+                    <Grid xs={12}>
+                        <Stack direction='row' alignItems='center' spacing={.5}>
+                            <Typography style={{ marginRight: 'auto' }}>
+                                File Size
+                            </Typography>
+
+                            <IconButtonWithTooltip
+                                title='Reset'
+                                icon={<RefreshIcon />}
+                                onClick={fileSizeCanBeReset ? resetFileSize : undefined}
+                            />
+                        </Stack>
+                    </Grid>
+
+                    <Grid xs={12}>
+                        <Stack direction='row' spacing={1} justifyItems='space-between'>
+                            <FileSizeField label='min'
+                                value={`${options.minFileSize ?? ''}`}
+                                onChange={onFileSizeChange}
+                                invalid={fileSizeInvalid} />
+                            <FileSizeField label='max'
+                                value={`${options.maxFileSize ?? ''}`}
+                                onChange={onFileSizeChange}
+                                invalid={fileSizeInvalid} />
+                        </Stack>
+                    </Grid>
+                </>
+
+                <>
+                    <Grid xs={12}>
+                        <Stack direction='row' alignItems='center' spacing={.5}>
+                            <Typography style={{ marginRight: 'auto' }}>
+                                Modification date
+                            </Typography>
+
+                            <IconButtonWithTooltip
+                                title='Reset'
+                                icon={<RefreshIcon />}
+                                onClick={() => { }}
+                            />
+                        </Stack>
+                    </Grid>
+
+                    <Grid xs={12}>
+
                     </Grid>
                 </>
 
