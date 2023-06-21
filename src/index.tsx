@@ -5,6 +5,8 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 const darkTheme = createTheme({
     palette: {
@@ -19,8 +21,10 @@ const root = ReactDOM.createRoot(
 root.render(
     <React.StrictMode>
         <ThemeProvider theme={darkTheme}>
-            <CssBaseline />
-            <App />
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <CssBaseline />
+                <App />
+            </LocalizationProvider>
         </ThemeProvider>
     </React.StrictMode>
 );

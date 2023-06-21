@@ -28,4 +28,10 @@ export interface IndexedImage {
 export interface SearchOptions {
     colors?: number[],
     threshold?: number,
+
+    minFileSize?: number,
+    maxFileSize?: number,
+
+    beforeDate?: Date,
+    afterDate?: Date,
 }
