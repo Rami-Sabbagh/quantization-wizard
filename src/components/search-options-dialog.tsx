@@ -11,6 +11,7 @@ import { IndexedImage, SearchOptions } from 'lib/images/interfaces';
 import { IconButtonWithTooltip } from 'components/icon-button-with-tooltip';
 import { ColorMultiSelector, DetailedPaletteColor } from 'components/color-multi-selector';
 import { NumericFormatCustom } from 'components/numeric-format-custom';
+import { DatePicker } from '@mui/x-date-pickers';
 
 const thresholdMarks = [
     { value: 25 },
@@ -142,8 +143,8 @@ export function SearchOptionsDialog({
     return <Dialog maxWidth='sm' fullWidth scroll='body' open={open} onClose={onClose}>
         <DialogTitle>Search Options</DialogTitle>
         <DialogContent>
-            <Grid container>
-                <>
+            <Grid container spacing={2}>
+                <Grid container xs={12} spacing={0}>
                     <Grid xs={12}>
                         <Stack direction='row' alignItems='center' spacing={.5}>
                             <Typography style={{ marginRight: 'auto' }}>
@@ -173,9 +174,9 @@ export function SearchOptionsDialog({
                             setSelected={setSelectedColors}
                         />
                     </Grid>
-                </>
+                </Grid>
 
-                <>
+                <Grid container xs={12} spacing={0}>
                     <Grid xs={12}>
                         <Stack direction='row' alignItems='center' spacing={.5}>
                             <Typography style={{ marginRight: 'auto' }}>
@@ -191,7 +192,7 @@ export function SearchOptionsDialog({
                     </Grid>
 
                     <Grid xs={12}>
-                        <Stack direction='row' spacing={1} justifyItems='space-between'>
+                        <Stack direction='row' spacing={1}>
                             <FileSizeField label='min'
                                 value={`${options.minFileSize ?? ''}`}
                                 onChange={onFileSizeChange}
@@ -202,9 +203,9 @@ export function SearchOptionsDialog({
                                 invalid={fileSizeInvalid} />
                         </Stack>
                     </Grid>
-                </>
+                </Grid>
 
-                <>
+                <Grid container xs={12} spacing={0}>
                     <Grid xs={12}>
                         <Stack direction='row' alignItems='center' spacing={.5}>
                             <Typography style={{ marginRight: 'auto' }}>
@@ -220,11 +221,16 @@ export function SearchOptionsDialog({
                     </Grid>
 
                     <Grid xs={12}>
-
+                        <Stack direction='row' spacing={1}>
+                            <div style={{ flex: 1 }} />
+                            <DatePicker label="After" />
+                            <DatePicker label="Before" />
+                            <div style={{ flex: 1 }} />
+                        </Stack>
                     </Grid>
-                </>
+                </Grid>
 
-                <>
+                <Grid container xs={12} spacing={0}>
                     <Grid xs={12}>
                         <Typography>Threshold</Typography>
                     </Grid>
@@ -242,7 +248,7 @@ export function SearchOptionsDialog({
                             </Typography>
                         </Stack>
                     </Grid>
-                </>
+                </Grid>
             </Grid>
         </DialogContent>
         <DialogActions>
