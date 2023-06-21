@@ -13,9 +13,14 @@ import { toBlob, toDataURL } from 'lib/images/browser/loader';
 import { CanvasLayer } from 'components/canvas-layer';
 import { findSimilar } from 'lib/images/browser/async';
 
+const DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
+
 interface SourceImage extends IndexedImage {
     path: string;
     dataURL: string;
+
+    size: number;
+    lastModified: number;
 }
 
 async function loadAllIndexedImages(handles: FilesHandlesList): Promise<SourceImage[]> {
@@ -28,7 +33,9 @@ async function loadAllIndexedImages(handles: FilesHandlesList): Promise<SourceIm
         const image = await decodeIndexedBinImage(file);
         const dataURL = toDataURL(image.data);
 
-        results.push({ path, dataURL, ...image });
+        const { size, lastModified } = file;
+
+        results.push({ path, dataURL, size, lastModified, ...image });
     }
 
     return results;
@@ -59,11 +66,26 @@ export function SimilarSearch({ setMode }: SimilarSearchProps) {
 
         const controller = new AbortController();
 
+        const { beforeDate, afterDate, minFileSize, maxFileSize } = searchOptions;
+        const beforeTimestamp = beforeDate?.getTime();
+        const afterTimestamp = afterDate?.getTime();
+
+        console.log(beforeTimestamp, afterTimestamp, beforeDate, afterDate);
+
+        const filteredImages = sourceImages.filter(image => {
+            if (beforeTimestamp && image.lastModified >= beforeTimestamp + DAY_MILLISECONDS) return false;
+            if (afterTimestamp && image.lastModified < afterTimestamp) return false;
+            if (minFileSize && image.size < minFileSize * 1024) return false;
+            if (maxFileSize && image.size > maxFileSize * 1024) return false;
+
+            return true;
+        });
+
         (async () => {
-            const results = await findSimilar(targetImage, sourceImages, searchOptions, controller.signal);
+            const results = await findSimilar(targetImage, filteredImages, searchOptions, controller.signal);
             if (!results) return;
 
-            setResultImages(results.map(index => sourceImages[index]));
+            setResultImages(results.map(index => filteredImages[index]));
             setCanvasToken(Date.now());
         })().catch(console.error);
 
