@@ -19,7 +19,7 @@ export function PaletteDialog({ open, onClose, showHistogram, palette }: Palette
     useEffect(() => setSelected(0), [palette]);
     if (selected >= palette.length && selected !== 0) setSelected(0);
 
-    return <Dialog maxWidth='md' open={open} onClose={onClose} >
+    return <Dialog maxWidth='md' scroll='body' open={open} onClose={onClose} >
         <DialogTitle>Color Palette</DialogTitle>
         <DialogContent>
             <ColorSelector palette={palette} selected={selected} onSelect={setSelected} />
