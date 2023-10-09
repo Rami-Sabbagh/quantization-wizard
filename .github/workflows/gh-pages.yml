@@ -32,10 +32,9 @@ jobs:
       - name: Build the application
         run: yarn build
       
-      - name: Upload the build artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload the gh-pages artifact
+        uses: actions/upload-pages-artifact@v2
         with:
-          name: github-pages
           path: build/
 
   gh-pages:
