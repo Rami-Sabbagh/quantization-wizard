@@ -1,6 +1,19 @@
 {
   "name": "quantization-wizard",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "A web application for the quantization of colors in images.",
+  "repository": "git@github.com:Rami-Sabbagh/quantization-wizard.git",
+  "homepage": "https://rami-sabbagh.github.io/quantization-wizard/",
+  "bugs": "https://github.com/Rami-Sabbagh/quantization-wizard/issues",
+  "author": "Rami Sabbagh <rami.sab07@gmail.com> (https://rami-sabbagh.github.io/)",
+  "contributors": [
+    "Hrayr Derbedrossian",
+    "Haider Al-sous",
+    "Marianne Deeb"
+  ],
+  "keywords": ["quantization", "typescript", "javascript", "workers"],
+  "license": "MIT",
+  "main": "src/index.tsx",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.0",
